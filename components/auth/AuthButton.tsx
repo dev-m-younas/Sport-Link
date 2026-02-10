@@ -1,0 +1,109 @@
+import React from 'react';
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  ViewStyle,
+} from 'react-native';
+
+type AuthButtonProps = {
+  title: string;
+  onPress: () => void;
+  loading?: boolean;
+  variant?: 'primary' | 'secondary' | 'outline' | 'google';
+  disabled?: boolean;
+  style?: ViewStyle;
+};
+
+export function AuthButton({
+  title,
+  onPress,
+  loading = false,
+  variant = 'primary',
+  disabled = false,
+  style,
+}: AuthButtonProps) {
+  const isDisabled = disabled || loading;
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.button,
+        styles[variant],
+        isDisabled && styles.disabled,
+        style,
+      ]}
+      onPress={onPress}
+      disabled={isDisabled}
+      activeOpacity={0.8}>
+      {loading ? (
+        <ActivityIndicator
+          color={
+            variant === 'google'
+              ? '#333'
+              : variant === 'outline' || variant === 'secondary'
+                ? '#0a7ea4'
+                : '#fff'
+          }
+          size="small"
+        />
+      ) : (
+        <Text
+          style={[
+            styles.text,
+            variant === 'google'
+              ? styles.textGoogle
+              : variant === 'outline' || variant === 'secondary'
+                ? styles.textSecondary
+                : styles.textPrimary,
+          ]}>
+          {title}
+        </Text>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  button: {
+    height: 52,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  primary: {
+    backgroundColor: '#0a7ea4',
+  },
+  secondary: {
+    backgroundColor: 'transparent',
+  },
+  outline: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#0a7ea4',
+  },
+  google: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#dadce0',
+  },
+  disabled: {
+    opacity: 0.6,
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  textPrimary: {
+    color: '#fff',
+  },
+  textSecondary: {
+    color: '#0a7ea4',
+  },
+  textGoogle: {
+    color: '#333',
+  },
+});

@@ -37,6 +37,24 @@ service cloud.firestore {
       // Delete: User can only delete their own profile
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
+    
+    // Activities collection - authenticated users can create and read activities
+    match /activities/{activityId} {
+      // Read: Any authenticated user can read activities (for home feed)
+      allow read: if request.auth != null;
+      
+      // Create: Any authenticated user can create activities
+      allow create: if request.auth != null 
+        && request.resource.data.creatorUid == request.auth.uid;
+      
+      // Update: Only creator can update their own activity
+      allow update: if request.auth != null 
+        && resource.data.creatorUid == request.auth.uid;
+      
+      // Delete: Only creator can delete their own activity
+      allow delete: if request.auth != null 
+        && resource.data.creatorUid == request.auth.uid;
+    }
   }
 }
 ```

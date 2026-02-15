@@ -62,9 +62,14 @@ export default function ExpertiseScreen() {
         dateOfBirth: params.dateOfBirth as string,
         gender: params.gender as any,
         country: params.country as string,
+        countryCode: params.countryCode as string,
         city: params.city as string,
         activities,
         expertiseLevel: selectedLevel,
+        // Only include profileImage if it exists and is not empty
+        ...(params.profileImage && (params.profileImage as string).trim() !== '' 
+          ? { profileImage: params.profileImage as string } 
+          : {}),
         onboardingCompleted: true,
       });
 

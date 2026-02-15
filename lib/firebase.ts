@@ -48,7 +48,7 @@ if (Platform.OS === 'web') {
   }
 }
 
-// Initialize Firestore with custom database ID
+// Initialize Firestore with database "sport-link" (rules must be deployed to sport-link in Firebase Console)
 const db: Firestore = getFirestore(app, 'sport-link');
 
 // Enable offline persistence for web

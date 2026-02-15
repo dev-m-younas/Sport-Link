@@ -14,21 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-
-const ACTIVITIES = [
-  { id: 'football', name: 'Football', icon: 'soccer' },
-  { id: 'cricket', name: 'Cricket', icon: 'cricket' },
-  { id: 'tennis', name: 'Tennis', icon: 'tennis' },
-  { id: 'table-tennis', name: 'Table Tennis', icon: 'table-tennis' },
-  { id: 'basketball', name: 'Basketball', icon: 'basketball' },
-  { id: 'badminton', name: 'Badminton', icon: 'badminton' },
-  { id: 'volleyball', name: 'Volleyball', icon: 'volleyball' },
-  { id: 'swimming', name: 'Swimming', icon: 'swim' },
-  { id: 'running', name: 'Running', icon: 'run' },
-  { id: 'cycling', name: 'Cycling', icon: 'bike' },
-  { id: 'gym', name: 'Gym/Fitness', icon: 'dumbbell' },
-  { id: 'yoga', name: 'Yoga', icon: 'yoga' },
-];
+import { ACTIVITIES } from '@/constants/activities';
 
 export default function ActivitiesScreen() {
   const params = useLocalSearchParams();

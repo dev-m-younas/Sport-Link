@@ -12,6 +12,8 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'expo-image';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -19,8 +21,10 @@ import { AuthInput } from '@/components/auth/AuthInput';
 import { AuthButton } from '@/components/auth/AuthButton';
 import { CountryDropdown } from '@/components/auth/CountryDropdown';
 import { PhoneInput } from '@/components/auth/PhoneInput';
+import { CityDropdown } from '@/components/auth/CityDropdown';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { showToast } from '@/lib/toast';
 import type { Gender } from '@/lib/userProfile';
 import type { Country } from '@/lib/countries';
 
@@ -37,7 +41,8 @@ export default function PersonalInfoScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [gender, setGender] = useState<Gender>('other');
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   const isValid =
     name.trim() &&
@@ -45,7 +50,7 @@ export default function PersonalInfoScreen() {
     phoneNumber.trim() &&
     selectedCountryCode &&
     selectedCountry &&
-    city.trim();
+    city;
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -62,6 +67,37 @@ export default function PersonalInfoScreen() {
     }
   };
 
+  const handleImagePick = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        showToast.error(
+          'Permission Required',
+          'Please enable photo library permission in settings.'
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0 && result.assets[0]?.uri) {
+        setProfileImage(result.assets[0].uri);
+      } else if (result.canceled) {
+        // User canceled, do nothing
+        return;
+      } else {
+        showToast.error('Error', 'No image selected or image data is invalid');
+      }
+    } catch (error: any) {
+      showToast.error('Error', error?.message || 'Failed to pick image');
+    }
+  };
+
   const handleNext = () => {
     if (!isValid) return;
     const fullPhoneNumber = selectedCountryCode
@@ -74,11 +110,13 @@ export default function PersonalInfoScreen() {
         name: name.trim(),
         email: email.trim(),
         phoneNumber: fullPhoneNumber,
-        dateOfBirth: dateOfBirth.toISOString(),
+        dateOfBirth: dateOfBirth.toISOString().split('T')[0],
         gender,
         country: selectedCountry?.name || '',
         countryCode: selectedCountry?.code || '',
-        city: city.trim(),
+        city: city || '',
+        // Only include profileImage if it has a value, otherwise don't include it
+        ...(profileImage ? { profileImage } : {}),
       },
     });
   };
@@ -95,13 +133,6 @@ export default function PersonalInfoScreen() {
             showsVerticalScrollIndicator={false}>
             {/* Header */}
             <View style={styles.header}>
-              <View style={[styles.iconCircle, isDark && styles.iconCircleDark]}>
-                <MaterialCommunityIcons
-                  name="account-edit"
-                  size={40}
-                  color="#0a7ea4"
-                />
-              </View>
               <ThemedText type="title" style={styles.title}>
                 Personal Information
               </ThemedText>
@@ -112,6 +143,27 @@ export default function PersonalInfoScreen() {
 
             {/* Form */}
             <View style={styles.form}>
+              {/* Profile Image */}
+              <View style={styles.profileImageContainer}>
+                <TouchableOpacity onPress={handleImagePick} activeOpacity={0.8}>
+                  {profileImage ? (
+                    <Image
+                      source={{ uri: profileImage }}
+                      style={styles.profileImage}
+                      contentFit="cover"
+                    />
+                  ) : (
+                    <View style={[styles.profileImagePlaceholder, isDark && styles.profileImagePlaceholderDark]}>
+                      <MaterialCommunityIcons name="camera" size={32} color="#0a7ea4" />
+                    </View>
+                  )}
+                  <View style={[styles.editIcon, isDark && styles.editIconDark]}>
+                    <MaterialCommunityIcons name="pencil" size={16} color="#fff" />
+                  </View>
+                </TouchableOpacity>
+                <ThemedText style={styles.profileImageLabel}>Profile Photo (Optional)</ThemedText>
+              </View>
+
               <AuthInput
                 label="Full Name"
                 placeholder="Enter your full name"
@@ -136,7 +188,13 @@ export default function PersonalInfoScreen() {
                 value={phoneNumber}
                 onChangeText={setPhoneNumber}
                 selectedCountry={selectedCountryCode}
-                onCountrySelect={setSelectedCountryCode}
+                onCountrySelect={(country) => {
+                  setSelectedCountryCode(country);
+                  // Auto-select country dropdown when phone country code is selected
+                  setSelectedCountry(country);
+                  // Reset city when country changes
+                  setCity(null);
+                }}
               />
 
               {/* Date of Birth */}
@@ -208,16 +266,20 @@ export default function PersonalInfoScreen() {
                   if (!selectedCountryCode) {
                     setSelectedCountryCode(country);
                   }
+                  // Reset city when country changes
+                  setCity(null);
                 }}
               />
 
-              <AuthInput
-                label="City"
-                placeholder="Enter your city"
-                value={city}
-                onChangeText={setCity}
-                textContentType="addressCity"
-              />
+              {selectedCountry && (
+                <CityDropdown
+                  label="City"
+                  selectedCity={city}
+                  onSelect={setCity}
+                  countryCode={selectedCountry.code}
+                  placeholder="Select your city"
+                />
+              )}
 
               <AuthButton
                 title="Continue"
@@ -246,22 +308,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 24,
     paddingTop: 48,
+    paddingBottom: 32,
   },
   header: {
     alignItems: 'center',
     marginBottom: 32,
-  },
-  iconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#E6F4FE',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  iconCircleDark: {
-    backgroundColor: '#1D3D47',
   },
   title: {
     marginBottom: 8,
@@ -341,5 +392,50 @@ const styles = StyleSheet.create({
   },
   genderTextActive: {
     color: '#fff',
+  },
+  profileImageContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  profileImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 3,
+    borderColor: '#0a7ea4',
+  },
+  profileImagePlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#E6F4FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#0a7ea4',
+  },
+  profileImagePlaceholderDark: {
+    backgroundColor: '#1D3D47',
+  },
+  editIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#0a7ea4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: '#fff',
+  },
+  editIconDark: {
+    borderColor: '#1C1C1E',
+  },
+  profileImageLabel: {
+    fontSize: 12,
+    opacity: 0.7,
+    marginTop: 8,
   },
 });

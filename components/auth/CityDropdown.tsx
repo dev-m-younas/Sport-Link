@@ -3,129 +3,100 @@ import {
   View,
   Text,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   Modal,
   FlatList,
   Platform,
   Pressable,
+  TextInput,
   useWindowDimensions,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
-import { COUNTRIES, type Country } from '@/lib/countries';
+import { getCitiesByCountryCode } from '@/lib/countries';
 
-type PhoneInputProps = {
-  value: string;
-  onChangeText: (text: string) => void;
-  selectedCountry: Country | null;
-  onCountrySelect: (country: Country) => void;
+type CityDropdownProps = {
+  selectedCity: string | null;
+  onSelect: (city: string) => void;
+  countryCode: string | null;
   label?: string;
   placeholder?: string;
 };
 
-export function PhoneInput({
-  value,
-  onChangeText,
-  selectedCountry,
-  onCountrySelect,
+export function CityDropdown({
+  selectedCity,
+  onSelect,
+  countryCode,
   label,
-  placeholder = 'Enter phone number',
-}: PhoneInputProps) {
+  placeholder = 'Select City',
+}: CityDropdownProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const isDark = colorScheme === 'dark';
   const { height: winHeight } = useWindowDimensions();
-  const [countryModalVisible, setCountryModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const tint = Colors[colorScheme].tint;
 
-  const filteredCountries = useMemo(() => {
-    if (!searchQuery.trim()) return COUNTRIES;
-    const q = searchQuery.trim().toLowerCase();
-    return COUNTRIES.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.phoneCode.includes(q) ||
-        c.code.toLowerCase().includes(q),
-    );
-  }, [searchQuery]);
+  const cities = countryCode ? getCitiesByCountryCode(countryCode) : [];
+  const hasCities = cities.length > 0;
 
-  const handleCountrySelect = (country: Country) => {
-    onCountrySelect(country);
-    setCountryModalVisible(false);
+  const filteredCities = useMemo(() => {
+    if (!searchQuery.trim()) return cities;
+    const q = searchQuery.trim().toLowerCase();
+    return cities.filter((c) => c.toLowerCase().includes(q));
+  }, [cities, searchQuery]);
+
+  const handleSelect = (city: string) => {
+    onSelect(city);
+    setModalVisible(false);
     setSearchQuery('');
   };
 
   const closeModal = () => {
-    setCountryModalVisible(false);
+    setModalVisible(false);
     setSearchQuery('');
   };
+
+  if (!countryCode || !hasCities) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
       {label ? <ThemedText style={styles.label}>{label}</ThemedText> : null}
-      <View
-        style={[
-          styles.inputContainer,
-          isDark ? styles.inputContainerDark : styles.inputContainerLight,
-        ]}>
-        {/* Country Code Button */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.countryCodeButton,
-            isDark ? styles.countryCodeButtonDark : styles.countryCodeButtonLight,
-            pressed && styles.countryCodeButtonPressed,
+      <Pressable
+        style={({ pressed }) => [
+          styles.dropdownButton,
+          isDark ? styles.dropdownButtonDark : styles.dropdownButtonLight,
+          pressed && styles.dropdownButtonPressed,
+        ]}
+        onPress={() => setModalVisible(true)}
+        android_ripple={isDark ? { color: 'rgba(255,255,255,0.08)' } : { color: 'rgba(0,0,0,0.06)' }}>
+        <View style={[styles.triggerIconWrap, { backgroundColor: isDark ? 'rgba(10,126,164,0.2)' : '#E6F4FE' }]}>
+          <MaterialCommunityIcons name="city-variant-outline" size={20} color={tint} />
+        </View>
+        <Text
+          style={[
+            styles.dropdownText,
+            isDark ? styles.dropdownTextDark : styles.dropdownTextLight,
+            !selectedCity && styles.placeholderText,
           ]}
-          onPress={() => setCountryModalVisible(true)}
-          android_ripple={isDark ? { color: 'rgba(255,255,255,0.08)' } : { color: 'rgba(10,126,164,0.15)' }}>
-          <MaterialCommunityIcons name="phone-outline" size={18} color={tint} />
-          <Text
-            style={[
-              styles.countryCodeText,
-              { color: tint },
-            ]}>
-            {selectedCountry ? selectedCountry.phoneCode : '+1'}
-          </Text>
+          numberOfLines={1}>
+          {selectedCity || placeholder}
+        </Text>
+        <View style={[styles.chevronWrap, isDark && styles.chevronWrapDark]}>
           <MaterialCommunityIcons
             name="chevron-down"
-            size={18}
-            color={tint}
+            size={22}
+            color={selectedCity ? tint : (isDark ? '#9BA1A6' : '#687076')}
           />
-        </Pressable>
+        </View>
+      </Pressable>
 
-        {/* Divider */}
-        <View
-          style={[
-            styles.divider,
-            isDark ? styles.dividerDark : styles.dividerLight,
-          ]}
-        />
-
-        {/* Phone Number Input */}
-        <TextInput
-          style={[
-            styles.phoneInput,
-            isDark ? styles.phoneInputDark : styles.phoneInputLight,
-          ]}
-          placeholder={placeholder}
-          placeholderTextColor={isDark ? '#9BA1A6' : '#687076'}
-          value={value}
-          onChangeText={onChangeText}
-          keyboardType="phone-pad"
-          textContentType="telephoneNumber"
-          {...Platform.select({
-            web: {
-              outlineStyle: 'none',
-            },
-          })}
-        />
-      </View>
-
-      {/* Country Code Modal - Modern Bottom Sheet */}
       <Modal
-        visible={countryModalVisible}
+        visible={modalVisible}
         animationType="slide"
         transparent
         onRequestClose={closeModal}>
@@ -139,15 +110,14 @@ export function PhoneInput({
             ]}>
             <View style={[styles.handleBar, isDark && styles.handleBarDark]} />
 
-            {/* Header */}
             <View style={styles.modalHeader}>
               <View style={styles.modalHeaderTop}>
                 <View>
                   <ThemedText style={[styles.modalTitle, isDark && styles.modalTitleDark]}>
-                    Select Country
+                    Select City
                   </ThemedText>
                   <ThemedText style={[styles.modalSubtitle, isDark && styles.modalSubtitleDark]}>
-                    Choose your country code
+                    Choose your city
                   </ThemedText>
                 </View>
                 <TouchableOpacity
@@ -162,7 +132,6 @@ export function PhoneInput({
                 </TouchableOpacity>
               </View>
 
-              {/* Search */}
               <View style={[styles.searchWrap, isDark ? styles.searchWrapDark : styles.searchWrapLight]}>
                 <MaterialCommunityIcons
                   name="magnify"
@@ -171,7 +140,7 @@ export function PhoneInput({
                 />
                 <TextInput
                   style={[styles.searchInput, isDark ? styles.searchInputDark : styles.searchInputLight]}
-                  placeholder="Search country or code..."
+                  placeholder="Search city..."
                   placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
                   value={searchQuery}
                   onChangeText={setSearchQuery}
@@ -187,50 +156,39 @@ export function PhoneInput({
               </View>
             </View>
 
-            {/* Countries List */}
             <FlatList
               style={styles.listFill}
-              data={filteredCountries}
-              keyExtractor={(item) => item.code}
+              data={filteredCities}
+              keyExtractor={(item) => item}
               contentContainerStyle={styles.listContent}
               ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={
                 <View style={styles.emptyWrap}>
-                  <MaterialCommunityIcons name="earth-off" size={48} color={isDark ? '#6B7280' : '#9CA3AF'} />
-                  <ThemedText style={styles.emptyText}>No country found</ThemedText>
+                  <MaterialCommunityIcons name="city-variant-outline" size={48} color={isDark ? '#6B7280' : '#9CA3AF'} />
+                  <ThemedText style={styles.emptyText}>No city found</ThemedText>
                 </View>
               }
               renderItem={({ item }) => {
-                const isSelected = selectedCountry?.code === item.code;
+                const isSelected = selectedCity === item;
                 return (
                   <Pressable
                     style={({ pressed }) => [
-                      styles.countryCard,
-                      isDark ? styles.countryCardDark : styles.countryCardLight,
-                      isSelected && (isDark ? styles.countryCardSelectedDark : styles.countryCardSelectedLight),
+                      styles.optionCard,
+                      isDark ? styles.optionCardDark : styles.optionCardLight,
+                      isSelected && (isDark ? styles.optionCardSelectedDark : styles.optionCardSelectedLight),
                       isSelected && { borderColor: tint },
-                      pressed && styles.countryCardPressed,
+                      pressed && styles.optionCardPressed,
                     ]}
-                    onPress={() => handleCountrySelect(item)}>
-                    <View style={styles.countryCardContent}>
-                      <Text
-                        style={[
-                          styles.countryName,
-                          isDark ? styles.countryNameDark : styles.countryNameLight,
-                          isSelected && { color: tint, fontWeight: '600' },
-                        ]}>
-                        {item.name}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.phoneCode,
-                          isDark ? styles.phoneCodeDark : styles.phoneCodeLight,
-                          isSelected && { color: tint, fontWeight: '600' },
-                        ]}>
-                        {item.phoneCode}
-                      </Text>
-                    </View>
+                    onPress={() => handleSelect(item)}>
+                    <Text
+                      style={[
+                        styles.optionLabel,
+                        isDark ? styles.optionLabelDark : styles.optionLabelLight,
+                        isSelected && { color: tint, fontWeight: '600' },
+                      ]}>
+                      {item}
+                    </Text>
                     {isSelected ? (
                       <View style={[styles.checkBadge, { backgroundColor: tint }]}>
                         <MaterialCommunityIcons name="check" size={16} color="#fff" />
@@ -256,64 +214,71 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
   },
-  inputContainer: {
-    height: 52,
-    borderRadius: 14,
+  dropdownButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 4,
+    minHeight: 56,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
     overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
-  inputContainerLight: {
-    backgroundColor: '#F1F3F4',
+  dropdownButtonLight: {
+    backgroundColor: '#fff',
+    borderColor: 'rgba(0,0,0,0.08)',
   },
-  inputContainerDark: {
+  dropdownButtonDark: {
     backgroundColor: '#2C2E31',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
-  countryCodeButton: {
-    flexDirection: 'row',
+  dropdownButtonPressed: {
+    opacity: 0.92,
+  },
+  triggerIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 6,
-    minWidth: 92,
-    borderRadius: 10,
+    marginRight: 14,
   },
-  countryCodeButtonLight: {
-    backgroundColor: 'rgba(10, 126, 164, 0.12)',
-  },
-  countryCodeButtonDark: {
-    backgroundColor: 'rgba(10, 126, 164, 0.2)',
-  },
-  countryCodeButtonPressed: {
-    opacity: 0.85,
-  },
-  countryCodeText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  divider: {
-    width: 1,
-    height: 32,
-    marginHorizontal: 8,
-  },
-  dividerLight: {
-    backgroundColor: 'rgba(0,0,0,0.1)',
-  },
-  dividerDark: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
-  },
-  phoneInput: {
+  dropdownText: {
     flex: 1,
     fontSize: 16,
-    paddingHorizontal: 14,
+    fontWeight: '500',
   },
-  phoneInputLight: {
+  dropdownTextLight: {
     color: '#11181C',
   },
-  phoneInputDark: {
+  dropdownTextDark: {
     color: '#ECEDEE',
+  },
+  placeholderText: {
+    fontWeight: '400',
+    opacity: 0.5,
+  },
+  chevronWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.04)',
+  },
+  chevronWrapDark: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   modalRoot: {
     flex: 1,
@@ -417,7 +382,7 @@ const styles = StyleSheet.create({
   itemSeparator: {
     height: 10,
   },
-  countryCard: {
+  optionCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -427,50 +392,31 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
   },
-  countryCardLight: {
+  optionCardLight: {
     backgroundColor: '#F5F6F7',
   },
-  countryCardDark: {
+  optionCardDark: {
     backgroundColor: '#2C2E31',
   },
-  countryCardSelectedLight: {
+  optionCardSelectedLight: {
     backgroundColor: '#E6F4FE',
   },
-  countryCardSelectedDark: {
+  optionCardSelectedDark: {
     backgroundColor: 'rgba(10,126,164,0.15)',
   },
-  countryCardPressed: {
-    opacity: 0.9,
+  optionCardPressed: {
+    opacity: 0.85,
   },
-  countryCardContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  countryName: {
+  optionLabel: {
     fontSize: 16,
     fontWeight: '500',
     flex: 1,
   },
-  countryNameLight: {
+  optionLabelLight: {
     color: '#11181C',
   },
-  countryNameDark: {
+  optionLabelDark: {
     color: '#ECEDEE',
-  },
-  phoneCode: {
-    fontSize: 15,
-    fontWeight: '600',
-    minWidth: 48,
-    textAlign: 'right',
-  },
-  phoneCodeLight: {
-    color: '#687076',
-  },
-  phoneCodeDark: {
-    color: '#9BA1A6',
   },
   checkBadge: {
     width: 28,
@@ -478,7 +424,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 12,
   },
   emptyWrap: {
     alignItems: 'center',

@@ -1,8 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { CustomTabBar } from '@/components/CustomTabBar';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -11,23 +10,81 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="players"
+        options={{
+          title: 'Players',
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Chat',
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: 'Notifications',
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="edit-profile"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="my-activities"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="terms-policies"
+        options={{
+          href: null,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="chat-detail"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="scheduled-activities"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="report-problem"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

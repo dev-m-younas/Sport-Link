@@ -11,6 +11,7 @@ import {
 import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Image } from 'expo-image';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -28,6 +29,8 @@ export default function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const passwordsMatch = password === confirmPassword;
   const isValid = email.trim() && password.length >= 6 && passwordsMatch;
@@ -68,13 +71,11 @@ export default function SignUpScreen() {
             showsVerticalScrollIndicator={false}>
             {/* Header */}
             <View style={styles.header}>
-              <View style={[styles.logoCircle, isDark && styles.logoCircleDark]}>
-                <MaterialCommunityIcons
-                  name="account-plus"
-                  size={48}
-                  color="#0a7ea4"
-                />
-              </View>
+              <Image
+                source={require('@/assets/images/Logo.png')}
+                style={styles.logo}
+                contentFit="contain"
+              />
               <ThemedText type="title" style={styles.title}>
                 Create Account
               </ThemedText>
@@ -102,11 +103,14 @@ export default function SignUpScreen() {
               />
               <AuthInput
                 label="Password"
-                placeholder="Create a password (min 6 characters)"
+                placeholder="Password"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
                 textContentType="newPassword"
+                showPasswordToggle
+                isPasswordVisible={showPassword}
+                onTogglePasswordVisibility={() => setShowPassword(!showPassword)}
               />
               <AuthInput
                 label="Confirm Password"
@@ -115,6 +119,9 @@ export default function SignUpScreen() {
                 onChangeText={setConfirmPassword}
                 secureTextEntry
                 textContentType="newPassword"
+                showPasswordToggle
+                isPasswordVisible={showConfirmPassword}
+                onTogglePasswordVisibility={() => setShowConfirmPassword(!showConfirmPassword)}
                 error={
                   confirmPassword && !passwordsMatch
                     ? 'Passwords do not match'
@@ -176,17 +183,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  logoCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: '#E6F4FE',
-    justifyContent: 'center',
-    alignItems: 'center',
+  logo: {
+    width: 200,
+    height: 120,
     marginBottom: 24,
-  },
-  logoCircleDark: {
-    backgroundColor: '#1D3D47',
   },
   title: {
     marginBottom: 8,

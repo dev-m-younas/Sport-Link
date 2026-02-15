@@ -1,5 +1,6 @@
 import { Redirect } from 'expo-router';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { useAuth } from '@/contexts/AuthContext';
 import { ThemedView } from '@/components/themed-view';
 
@@ -9,7 +10,12 @@ export default function Index() {
   if (loading) {
     return (
       <ThemedView style={styles.loading}>
-        <ActivityIndicator size="large" color="#0a7ea4" />
+        <Image
+          source={require('@/assets/images/Logo.png')}
+          style={styles.logo}
+          contentFit="contain"
+        />
+        <ActivityIndicator size="large" color="#0a7ea4" style={styles.spinner} />
       </ThemedView>
     );
   }
@@ -22,12 +28,9 @@ export default function Index() {
     if (onboardingCompleted === true) {
       return <Redirect href="/(tabs)" />;
     }
-    // If onboarding status is still loading (null), show loading
-    return (
-      <ThemedView style={styles.loading}>
-        <ActivityIndicator size="large" color="#0a7ea4" />
-      </ThemedView>
-    );
+    // If onboarding status is still loading (null), wait a bit then redirect to tabs
+    // This prevents infinite loading if onboarding check fails
+    return <Redirect href="/(tabs)" />;
   }
 
   return <Redirect href="/(auth)/sign-in" />;
@@ -38,5 +41,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logo: {
+    width: 200,
+    height: 120,
+    marginBottom: 32,
+  },
+  spinner: {
+    marginTop: 16,
   },
 });

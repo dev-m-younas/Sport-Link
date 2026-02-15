@@ -6,6 +6,8 @@ import {
   ActivityIndicator,
   ViewStyle,
 } from 'react-native';
+import { Image } from 'expo-image';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 type AuthButtonProps = {
   title: string;
@@ -49,17 +51,26 @@ export function AuthButton({
           size="small"
         />
       ) : (
-        <Text
-          style={[
-            styles.text,
-            variant === 'google'
-              ? styles.textGoogle
-              : variant === 'outline' || variant === 'secondary'
-                ? styles.textSecondary
-                : styles.textPrimary,
-          ]}>
-          {title}
-        </Text>
+        <>
+          {variant === 'google' && (
+            <Image
+              source={require('@/assets/images/google-logo.png')}
+              style={styles.googleLogo}
+              contentFit="contain"
+            />
+          )}
+          <Text
+            style={[
+              styles.text,
+              variant === 'google'
+                ? styles.textGoogle
+                : variant === 'outline' || variant === 'secondary'
+                  ? styles.textSecondary
+                  : styles.textPrimary,
+            ]}>
+            {title}
+          </Text>
+        </>
       )}
     </TouchableOpacity>
   );
@@ -105,5 +116,9 @@ const styles = StyleSheet.create({
   },
   textGoogle: {
     color: '#333',
+  },
+  googleLogo: {
+    width: 100,
+    height: 33,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Image } from 'expo-image';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -20,24 +21,42 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function SignInScreen() {
-  const { signIn, signInWithGoogle, authError, clearError, onboardingCompleted } = useAuth();
+  const { user, signIn, signInWithGoogle, authError, clearError, loading: authLoading } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const isDark = colorScheme === 'dark';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Reset local loading when user signs in
+  useEffect(() => {
+    if (user) {
+      console.log('User detected in sign-in screen, resetting loading');
+      setLoading(false);
+    }
+  }, [user]);
 
   const handleSignIn = async () => {
     if (!email.trim() || !password) return;
     setLoading(true);
     clearError();
     try {
-      await signIn(email.trim(), password);
-      // Navigation will be handled by auth state change in index.tsx
-    } catch {
-      // Error handled in context
-    } finally {
+      console.log('Attempting sign in...');
+      const result = await signIn(email.trim(), password);
+      console.log('Sign in successful, user:', result?.user?.uid);
+      // Reset loading immediately - navigation will be handled by index.tsx
+      setLoading(false);
+      // Force navigation after a short delay to ensure auth state is updated
+      setTimeout(() => {
+        if (result?.user) {
+          router.replace('/');
+        }
+      }, 100);
+    } catch (error: any) {
+      console.error('Sign in error:', error);
+      // Error handled in context - set loading to false on error
       setLoading(false);
     }
   };
@@ -64,13 +83,11 @@ export default function SignInScreen() {
             showsVerticalScrollIndicator={false}>
             {/* Header */}
             <View style={styles.header}>
-              <View style={[styles.logoCircle, isDark && styles.logoCircleDark]}>
-                <MaterialCommunityIcons
-                  name="shield-check"
-                  size={48}
-                  color="#0a7ea4"
-                />
-              </View>
+              <Image
+                source={require('@/assets/images/Logo.png')}
+                style={styles.logo}
+                contentFit="contain"
+              />
               <ThemedText type="title" style={styles.title}>
                 Welcome Back
               </ThemedText>
@@ -103,6 +120,9 @@ export default function SignInScreen() {
                 onChangeText={setPassword}
                 secureTextEntry
                 textContentType="password"
+                showPasswordToggle
+                isPasswordVisible={showPassword}
+                onTogglePasswordVisibility={() => setShowPassword(!showPassword)}
               />
 
               <AuthButton
@@ -159,17 +179,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  logoCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: '#E6F4FE',
-    justifyContent: 'center',
-    alignItems: 'center',
+  logo: {
+    width: 200,
+    height: 120,
     marginBottom: 24,
-  },
-  logoCircleDark: {
-    backgroundColor: '#1D3D47',
   },
   title: {
     marginBottom: 8,

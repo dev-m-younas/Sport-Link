@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,83 +8,84 @@ import {
   FlatList,
   Platform,
   Pressable,
-  TextInput,
-  useWindowDimensions,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
-import { COUNTRIES, type Country } from '@/lib/countries';
 
-type CountryDropdownProps = {
-  selectedCountry: Country | null;
-  onSelect: (country: Country) => void;
-  label?: string;
+type DropdownOption = {
+  label: string;
+  value: string;
 };
 
-export function CountryDropdown({
-  selectedCountry,
+type DropdownProps = {
+  options: DropdownOption[];
+  selectedValue: string | null;
+  onSelect: (value: string) => void;
+  label?: string;
+  placeholder?: string;
+  /** Optional icon name for trigger (e.g. 'soccer', 'trophy') */
+  triggerIcon?: string;
+};
+
+export function Dropdown({
+  options,
+  selectedValue,
   onSelect,
   label,
-}: CountryDropdownProps) {
+  placeholder = 'Select an option',
+  triggerIcon,
+}: DropdownProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const isDark = colorScheme === 'dark';
-  const { height: winHeight } = useWindowDimensions();
   const [modalVisible, setModalVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const tint = Colors[colorScheme].tint;
 
-  const filteredCountries = useMemo(() => {
-    if (!searchQuery.trim()) return COUNTRIES;
-    const q = searchQuery.trim().toLowerCase();
-    return COUNTRIES.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.phoneCode.includes(q) ||
-        c.code.toLowerCase().includes(q),
-    );
-  }, [searchQuery]);
+  const selectedOption = options.find((opt) => opt.value === selectedValue);
 
-  const handleSelect = (country: Country) => {
-    onSelect(country);
+  const handleSelect = (value: string) => {
+    onSelect(value);
     setModalVisible(false);
-    setSearchQuery('');
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
-    setSearchQuery('');
-  };
+  const openModal = () => setModalVisible(true);
+  const closeModal = () => setModalVisible(false);
 
   return (
     <View style={styles.container}>
-      {label ? <ThemedText style={styles.label}>{label}</ThemedText> : null}
+      {label ? (
+        <ThemedText style={[styles.label, isDark && styles.labelDark]}>
+          {label}
+        </ThemedText>
+      ) : null}
       <Pressable
         style={({ pressed }) => [
-          styles.dropdownButton,
-          isDark ? styles.dropdownButtonDark : styles.dropdownButtonLight,
-          pressed && styles.dropdownButtonPressed,
+          styles.trigger,
+          isDark ? styles.triggerDark : styles.triggerLight,
+          pressed && styles.triggerPressed,
         ]}
-        onPress={() => setModalVisible(true)}
+        onPress={openModal}
         android_ripple={isDark ? { color: 'rgba(255,255,255,0.08)' } : { color: 'rgba(0,0,0,0.06)' }}>
-        <View style={[styles.triggerIconWrap, { backgroundColor: isDark ? 'rgba(10,126,164,0.2)' : '#E6F4FE' }]}>
-          <MaterialCommunityIcons name="earth" size={20} color={tint} />
-        </View>
+        {triggerIcon ? (
+          <View style={[styles.triggerIconWrap, { backgroundColor: isDark ? 'rgba(10,126,164,0.2)' : '#E6F4FE' }]}>
+            <MaterialCommunityIcons name={triggerIcon as any} size={22} color={tint} />
+          </View>
+        ) : null}
         <Text
           style={[
-            styles.dropdownText,
-            isDark ? styles.dropdownTextDark : styles.dropdownTextLight,
-            !selectedCountry && styles.placeholderText,
+            styles.triggerText,
+            isDark ? styles.triggerTextDark : styles.triggerTextLight,
+            !selectedValue && styles.placeholderText,
           ]}
           numberOfLines={1}>
-          {selectedCountry ? selectedCountry.name : 'Select Country'}
+          {selectedOption ? selectedOption.label : placeholder}
         </Text>
         <View style={[styles.chevronWrap, isDark && styles.chevronWrapDark]}>
           <MaterialCommunityIcons
             name="chevron-down"
             size={22}
-            color={selectedCountry ? tint : (isDark ? '#9BA1A6' : '#687076')}
+            color={selectedValue ? tint : (isDark ? '#9BA1A6' : '#687076')}
           />
         </View>
       </Pressable>
@@ -99,72 +100,36 @@ export function CountryDropdown({
           <View
             style={[
               styles.modalSheet,
-              { maxHeight: Math.min(winHeight * 0.55, 450) },
               isDark ? styles.modalSheetDark : styles.modalSheetLight,
             ]}>
             <View style={[styles.handleBar, isDark && styles.handleBarDark]} />
-
             <View style={styles.modalHeader}>
-              <View style={styles.modalHeaderTop}>
-                <View>
-                  <ThemedText style={[styles.modalTitle, isDark && styles.modalTitleDark]}>
-                    Select Country
-                  </ThemedText>
-                  <ThemedText style={[styles.modalSubtitle, isDark && styles.modalSubtitleDark]}>
-                    Choose your country
-                  </ThemedText>
-                </View>
-                <TouchableOpacity
-                  hitSlop={12}
-                  style={[styles.closeBtn, isDark && styles.closeBtnDark]}
-                  onPress={closeModal}>
-                  <MaterialCommunityIcons
-                    name="close"
-                    size={24}
-                    color={isDark ? '#9BA1A6' : '#687076'}
-                  />
-                </TouchableOpacity>
-              </View>
-
-              <View style={[styles.searchWrap, isDark ? styles.searchWrapDark : styles.searchWrapLight]}>
+              <ThemedText style={[styles.modalTitle, isDark && styles.modalTitleDark]}>
+                {label || 'Select'}
+              </ThemedText>
+              <ThemedText style={[styles.modalSubtitle, isDark && styles.modalSubtitleDark]}>
+                Choose an option
+              </ThemedText>
+              <TouchableOpacity
+                hitSlop={12}
+                style={[styles.closeBtn, isDark && styles.closeBtnDark]}
+                onPress={closeModal}>
                 <MaterialCommunityIcons
-                  name="magnify"
-                  size={20}
+                  name="close"
+                  size={24}
                   color={isDark ? '#9BA1A6' : '#687076'}
                 />
-                <TextInput
-                  style={[styles.searchInput, isDark ? styles.searchInputDark : styles.searchInputLight]}
-                  placeholder="Search country..."
-                  placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  {...Platform.select({ web: { outlineStyle: 'none' as const } })}
-                />
-                {searchQuery ? (
-                  <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={8}>
-                    <MaterialCommunityIcons name="close-circle" size={20} color={isDark ? '#9BA1A6' : '#687076'} />
-                  </TouchableOpacity>
-                ) : null}
-              </View>
+              </TouchableOpacity>
             </View>
 
             <FlatList
-              style={styles.listFill}
-              data={filteredCountries}
-              keyExtractor={(item) => item.code}
+              data={options}
+              keyExtractor={(item) => item.value}
               contentContainerStyle={styles.listContent}
-              ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
+              ItemSeparatorComponent={() => <View style={styles.optionSeparator} />}
               showsVerticalScrollIndicator={false}
-              ListEmptyComponent={
-                <View style={styles.emptyWrap}>
-                  <MaterialCommunityIcons name="earth-off" size={48} color={isDark ? '#6B7280' : '#9CA3AF'} />
-                  <ThemedText style={styles.emptyText}>No country found</ThemedText>
-                </View>
-              }
               renderItem={({ item }) => {
-                const isSelected = selectedCountry?.code === item.code;
+                const isSelected = selectedValue === item.value;
                 return (
                   <Pressable
                     style={({ pressed }) => [
@@ -174,17 +139,17 @@ export function CountryDropdown({
                       isSelected && { borderColor: tint },
                       pressed && styles.optionCardPressed,
                     ]}
-                    onPress={() => handleSelect(item)}>
+                    onPress={() => handleSelect(item.value)}>
                     <Text
                       style={[
                         styles.optionLabel,
                         isDark ? styles.optionLabelDark : styles.optionLabelLight,
                         isSelected && { color: tint, fontWeight: '600' },
                       ]}>
-                      {item.name}
+                      {item.label}
                     </Text>
                     {isSelected ? (
-                      <View style={[styles.checkBadge, { backgroundColor: tint }]}>
+                      <View style={[styles.checkWrap, { backgroundColor: tint }]}>
                         <MaterialCommunityIcons name="check" size={16} color="#fff" />
                       </View>
                     ) : null}
@@ -201,14 +166,18 @@ export function CountryDropdown({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 10,
+    letterSpacing: 0.2,
   },
-  dropdownButton: {
+  labelDark: {
+    opacity: 0.95,
+  },
+  trigger: {
     flexDirection: 'row',
     alignItems: 'center',
     minHeight: 56,
@@ -229,15 +198,15 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  dropdownButtonLight: {
+  triggerLight: {
     backgroundColor: '#fff',
     borderColor: 'rgba(0,0,0,0.08)',
   },
-  dropdownButtonDark: {
+  triggerDark: {
     backgroundColor: '#2C2E31',
     borderColor: 'rgba(255,255,255,0.08)',
   },
-  dropdownButtonPressed: {
+  triggerPressed: {
     opacity: 0.92,
   },
   triggerIconWrap: {
@@ -248,15 +217,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 14,
   },
-  dropdownText: {
+  triggerText: {
     flex: 1,
     fontSize: 16,
     fontWeight: '500',
   },
-  dropdownTextLight: {
+  triggerTextLight: {
     color: '#11181C',
   },
-  dropdownTextDark: {
+  triggerTextDark: {
     color: '#ECEDEE',
   },
   placeholderText: {
@@ -285,6 +254,7 @@ const styles = StyleSheet.create({
   modalSheet: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    maxHeight: '82%',
     minHeight: 320,
     paddingBottom: Platform.OS === 'ios' ? 34 : 24,
     overflow: 'hidden',
@@ -307,15 +277,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
   },
   modalHeader: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 16,
-  },
-  modalHeaderTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
   },
   modalTitle: {
     fontSize: 22,
@@ -333,6 +297,9 @@ const styles = StyleSheet.create({
     color: '#9BA1A6',
   },
   closeBtn: {
+    position: 'absolute',
+    top: 12,
+    right: 20,
     padding: 8,
     borderRadius: 12,
     backgroundColor: 'rgba(0,0,0,0.05)',
@@ -340,40 +307,12 @@ const styles = StyleSheet.create({
   closeBtnDark: {
     backgroundColor: 'rgba(255,255,255,0.08)',
   },
-  searchWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 14,
-  },
-  searchWrapLight: {
-    backgroundColor: '#F5F6F7',
-  },
-  searchWrapDark: {
-    backgroundColor: '#2C2E31',
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    paddingVertical: 0,
-  },
-  searchInputLight: {
-    color: '#11181C',
-  },
-  searchInputDark: {
-    color: '#ECEDEE',
-  },
-  listFill: {
-    flex: 1,
-  },
   listContent: {
     paddingHorizontal: 20,
     paddingBottom: 24,
     paddingTop: 4,
   },
-  itemSeparator: {
+  optionSeparator: {
     height: 10,
   },
   optionCard: {
@@ -404,7 +343,6 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 16,
     fontWeight: '500',
-    flex: 1,
   },
   optionLabelLight: {
     color: '#11181C',
@@ -412,20 +350,11 @@ const styles = StyleSheet.create({
   optionLabelDark: {
     color: '#ECEDEE',
   },
-  checkBadge: {
+  checkWrap: {
     width: 28,
     height: 28,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  emptyWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    marginTop: 12,
-    opacity: 0.7,
   },
 });

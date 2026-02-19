@@ -105,7 +105,7 @@ export function CityDropdown({
           <View
             style={[
               styles.modalSheet,
-              { maxHeight: Math.min(winHeight * 0.55, 450) },
+              { maxHeight: Math.min(winHeight * 0.65, 520) },
               isDark ? styles.modalSheetDark : styles.modalSheetLight,
             ]}>
             <View style={[styles.handleBar, isDark && styles.handleBarDark]} />
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   modalSheet: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    minHeight: 320,
+    minHeight: 420,
     paddingBottom: Platform.OS === 'ios' ? 34 : 24,
     overflow: 'hidden',
   },

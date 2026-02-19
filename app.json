@@ -17,6 +17,11 @@
     },
     "android": {
       "package": "com.sportlink.app",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDMjJ1D4I-E9ISD5QTCON_YxoLKhweiWpQ"
+        }
+      },
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

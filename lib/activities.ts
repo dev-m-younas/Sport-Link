@@ -1,20 +1,20 @@
+import type { User } from "firebase/auth";
 import {
-  collection,
-  addDoc,
-  getDocs,
-  getDoc,
-  doc,
-  query,
-  where,
-  orderBy,
-  limit,
-  serverTimestamp,
-  type Timestamp,
-} from 'firebase/firestore';
-import { db } from './firebase';
-import type { User } from 'firebase/auth';
+    addDoc,
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    limit,
+    orderBy,
+    query,
+    serverTimestamp,
+    where,
+    type Timestamp,
+} from "firebase/firestore";
+import { db } from "./firebase";
 
-const ACTIVITIES_COLLECTION = 'activities';
+const ACTIVITIES_COLLECTION = "activities";
 const RADIUS_KM = 15;
 
 /** Distance between two points (lat/long) in km - Haversine formula */
@@ -22,7 +22,7 @@ function haversineDistanceKm(
   lat1: number,
   lon1: number,
   lat2: number,
-  lon2: number
+  lon2: number,
 ): number {
   const R = 6371; // Earth's radius in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -54,6 +54,12 @@ export interface ActivityCreateInput {
   creatorLong: number;
   /** Creator's display name from profile (preferred over Auth) */
   creatorName?: string;
+  /** open | limited | team */
+  activityType?: string;
+  /** For limited: max 4 */
+  maxPlayers?: number;
+  /** For team: min per team (e.g. 5) */
+  minPlayersPerTeam?: number;
 }
 
 export interface ActivityDoc {
@@ -73,23 +79,27 @@ export interface ActivityDoc {
   notes: string;
   videoUri: string | null;
   createdAt: string;
+  activityType?: string;
+  maxPlayers?: number;
+  minPlayersPerTeam?: number;
 }
 
 export async function saveActivity(
   user: User,
-  input: ActivityCreateInput
+  input: ActivityCreateInput,
 ): Promise<string> {
   try {
     // Validate user is authenticated
     if (!user || !user.uid) {
-      throw new Error('User must be authenticated to create activity');
+      throw new Error("User must be authenticated to create activity");
     }
-    
-    console.log('Saving activity with creatorUid:', user.uid);
-    
+
+    console.log("Saving activity with creatorUid:", user.uid);
+
     const activityData: any = {
       creatorUid: user.uid, // Must match request.auth.uid for security rules
-      creatorName: input.creatorName?.trim() || user.displayName || user.email || 'User',
+      creatorName:
+        input.creatorName?.trim() || user.displayName || user.email || "User",
       creatorEmail: user.email || null,
       creatorLat: input.creatorLat,
       creatorLong: input.creatorLong,
@@ -100,58 +110,95 @@ export async function saveActivity(
       level: input.level,
       date: input.date,
       time: input.time,
-      notes: (input.notes || '').trim(),
+      notes: (input.notes || "").trim(),
       createdAt: serverTimestamp(),
     };
-    
+    if (input.activityType) activityData.activityType = input.activityType;
+    if (input.maxPlayers != null) activityData.maxPlayers = input.maxPlayers;
+    if (input.minPlayersPerTeam != null) activityData.minPlayersPerTeam = input.minPlayersPerTeam;
+
     // Only include videoUri if it has a value (Firebase doesn't accept undefined)
-    if (input.videoUri !== undefined && input.videoUri !== null && input.videoUri.trim() !== '') {
+    if (
+      input.videoUri !== undefined &&
+      input.videoUri !== null &&
+      input.videoUri.trim() !== ""
+    ) {
       activityData.videoUri = input.videoUri;
     } else {
       activityData.videoUri = null;
     }
-    
-    console.log('Activity data to save:', {
+
+    console.log("Activity data to save:", {
       creatorUid: activityData.creatorUid,
       activity: activityData.activity,
       location: activityData.location,
     });
-    
-    const ref = await addDoc(collection(db, ACTIVITIES_COLLECTION), activityData);
-    console.log('Activity saved successfully with ID:', ref.id);
+
+    const ref = await addDoc(
+      collection(db, ACTIVITIES_COLLECTION),
+      activityData,
+    );
+    console.log("Activity saved successfully with ID:", ref.id);
     return ref.id;
   } catch (error: any) {
-    console.error('Error saving activity:', error);
-    console.error('Error code:', error?.code);
-    console.error('Error message:', error?.message);
+    console.error("Error saving activity:", error);
+    console.error("Error code:", error?.code);
+    console.error("Error message:", error?.message);
     throw error;
   }
 }
 
 const ACTIVITIES_FETCH_LIMIT = 50;
+/** Don't show activities that start within this many minutes (hide in last 15 min before start) */
+const HIDE_ACTIVITIES_WHEN_START_WITHIN_MINUTES = 15;
+
+/** Combine activity date + time to get start datetime */
+function getActivityStartMs(activity: { date: string; time: string }): number {
+  const d = new Date(activity.date);
+  const t = new Date(activity.time);
+  const year = d.getFullYear();
+  const month = d.getMonth();
+  const day = d.getDate();
+  const hours = t.getHours();
+  const minutes = t.getMinutes();
+  return new Date(year, month, day, hours, minutes, 0).getTime();
+}
+
+/** Show only if: not started yet AND starts more than 15 min from now */
+function shouldShowActivity(activity: { date: string; time: string }): boolean {
+  try {
+    const startMs = getActivityStartMs(activity);
+    const nowMs = Date.now();
+    const minStartMs =
+      nowMs + HIDE_ACTIVITIES_WHEN_START_WITHIN_MINUTES * 60 * 1000;
+    return startMs > minStartMs; // Show only if starts >15 min from now
+  } catch {
+    return true;
+  }
+}
 
 export async function getActivitiesWithinRadius(
   userLat: number,
   userLong: number,
   radiusKm: number = RADIUS_KM,
-  excludeUserId?: string
+  excludeUserId?: string,
 ): Promise<ActivityDoc[]> {
   const q = query(
     collection(db, ACTIVITIES_COLLECTION),
-    orderBy('createdAt', 'desc'),
-    limit(ACTIVITIES_FETCH_LIMIT)
+    orderBy("createdAt", "desc"),
+    limit(ACTIVITIES_FETCH_LIMIT),
   );
   const snapshot = await getDocs(q);
   const list: ActivityDoc[] = [];
   snapshot.forEach((doc) => {
     const d = doc.data();
-    const creatorUid = d.creatorUid ?? '';
-    
+    const creatorUid = d.creatorUid ?? "";
+
     // Exclude user's own activities if excludeUserId is provided
     if (excludeUserId && creatorUid === excludeUserId) {
       return;
     }
-    
+
     const creatorLat = d.creatorLat as number;
     const creatorLong = d.creatorLong as number;
     const activityLat = d.locationLat as number | undefined;
@@ -159,32 +206,33 @@ export async function getActivitiesWithinRadius(
     // Use activity location if available, otherwise use creator location
     const lat = activityLat ?? creatorLat;
     const lon = activityLong ?? creatorLong;
-    
-    const distance = haversineDistanceKm(
-      userLat,
-      userLong,
-      lat,
-      lon
-    );
+
+    const distance = haversineDistanceKm(userLat, userLong, lat, lon);
     if (distance <= radiusKm) {
+      const date = d.date ?? "";
+      const time = d.time ?? "";
+      if (!shouldShowActivity({ date, time })) return; // Hide if started or starts within 15 min
       const createdAt = d.createdAt as Timestamp | null;
       list.push({
         id: doc.id,
         creatorUid,
-        creatorName: d.creatorName ?? 'User',
+        creatorName: d.creatorName ?? "User",
         creatorEmail: d.creatorEmail ?? null,
         creatorLat,
         creatorLong,
-        location: d.location ?? '',
+        location: d.location ?? "",
         locationLat: (d.locationLat as number | undefined) ?? creatorLat,
         locationLong: (d.locationLong as number | undefined) ?? creatorLong,
-        activity: d.activity ?? '',
-        level: d.level ?? '',
-        date: d.date ?? '',
-        time: d.time ?? '',
-        notes: d.notes ?? '',
+        activity: d.activity ?? "",
+        level: d.level ?? "",
+        date,
+        time,
+        notes: d.notes ?? "",
         videoUri: d.videoUri ?? null,
-        createdAt: createdAt ? createdAt.toDate().toISOString() : '',
+        createdAt: createdAt ? createdAt.toDate().toISOString() : "",
+        activityType: d.activityType ?? undefined,
+        maxPlayers: d.maxPlayers ?? undefined,
+        minPlayersPerTeam: d.minPlayersPerTeam ?? undefined,
       });
     }
   });
@@ -192,11 +240,13 @@ export async function getActivitiesWithinRadius(
   return list;
 }
 
-export async function getUserActivities(userId: string): Promise<ActivityDoc[]> {
+export async function getUserActivities(
+  userId: string,
+): Promise<ActivityDoc[]> {
   try {
     const q = query(
       collection(db, ACTIVITIES_COLLECTION),
-      where('creatorUid', '==', userId)
+      where("creatorUid", "==", userId),
     );
     const snapshot = await getDocs(q);
     const list: ActivityDoc[] = [];
@@ -205,63 +255,71 @@ export async function getUserActivities(userId: string): Promise<ActivityDoc[]> 
       const createdAt = d.createdAt as Timestamp | null;
       list.push({
         id: doc.id,
-        creatorUid: d.creatorUid ?? '',
-        creatorName: d.creatorName ?? 'User',
+        creatorUid: d.creatorUid ?? "",
+        creatorName: d.creatorName ?? "User",
         creatorEmail: d.creatorEmail ?? null,
         creatorLat: d.creatorLat ?? 0,
         creatorLong: d.creatorLong ?? 0,
-        location: d.location ?? '',
+        location: d.location ?? "",
         locationLat: d.locationLat ?? d.creatorLat ?? 0,
         locationLong: d.locationLong ?? d.creatorLong ?? 0,
-        activity: d.activity ?? '',
-        level: d.level ?? '',
-        date: d.date ?? '',
-        time: d.time ?? '',
-        notes: d.notes ?? '',
+        activity: d.activity ?? "",
+        level: d.level ?? "",
+        date: d.date ?? "",
+        time: d.time ?? "",
+        notes: d.notes ?? "",
         videoUri: d.videoUri ?? null,
-        createdAt: createdAt ? createdAt.toDate().toISOString() : '',
+        createdAt: createdAt ? createdAt.toDate().toISOString() : "",
+        activityType: d.activityType ?? undefined,
+        maxPlayers: d.maxPlayers ?? undefined,
+        minPlayersPerTeam: d.minPlayersPerTeam ?? undefined,
       });
     });
     list.sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
     return list;
   } catch (error) {
-    console.error('Error fetching user activities:', error);
+    console.error("Error fetching user activities:", error);
     throw error;
   }
 }
 
-export async function getActivityById(activityId: string): Promise<ActivityDoc | null> {
+export async function getActivityById(
+  activityId: string,
+): Promise<ActivityDoc | null> {
   try {
     const docRef = doc(db, ACTIVITIES_COLLECTION, activityId);
     const docSnap = await getDoc(docRef);
-    
+
     if (!docSnap.exists()) {
       return null;
     }
-    
+
     const d = docSnap.data();
     const createdAt = d.createdAt as Timestamp | null;
-    
+
     return {
       id: docSnap.id,
-      creatorUid: d.creatorUid ?? '',
-      creatorName: d.creatorName ?? 'User',
+      creatorUid: d.creatorUid ?? "",
+      creatorName: d.creatorName ?? "User",
       creatorEmail: d.creatorEmail ?? null,
       creatorLat: d.creatorLat ?? 0,
       creatorLong: d.creatorLong ?? 0,
-      location: d.location ?? '',
+      location: d.location ?? "",
       locationLat: d.locationLat ?? d.creatorLat ?? 0,
       locationLong: d.locationLong ?? d.creatorLong ?? 0,
-      activity: d.activity ?? '',
-      level: d.level ?? '',
-      date: d.date ?? '',
-      time: d.time ?? '',
-      notes: d.notes ?? '',
+      activity: d.activity ?? "",
+      level: d.level ?? "",
+      date: d.date ?? "",
+      time: d.time ?? "",
+      notes: d.notes ?? "",
       videoUri: d.videoUri ?? null,
-      createdAt: createdAt ? createdAt.toDate().toISOString() : '',
+      createdAt: createdAt ? createdAt.toDate().toISOString() : "",
+      activityType: d.activityType ?? undefined,
+      maxPlayers: d.maxPlayers ?? undefined,
+      minPlayersPerTeam: d.minPlayersPerTeam ?? undefined,
     };
   } catch (error) {
-    console.error('Error fetching activity by ID:', error);
+    console.error("Error fetching activity by ID:", error);
     throw error;
   }
 }

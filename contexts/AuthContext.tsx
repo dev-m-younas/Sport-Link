@@ -38,12 +38,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authError, setAuthError] = useState<string | null>(null);
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
 
+  // Redirect URI must match exactly what you add in Google Cloud Console → Credentials → Web client → Authorized redirect URIs.
+  // Add: https://auth.expo.io/@younas.qayyum/my-app (see GOOGLE_SIGNIN_FIX_400.md)
   const [request, response, promptAsync] = Google.useAuthRequest({
-    // Use your own webClientId from Google Cloud Console for production
     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     scopes: ["profile", "email"],
+    redirectUri: "https://auth.expo.io/@younas.qayyum/my-app",
   });
 
   useEffect(() => {

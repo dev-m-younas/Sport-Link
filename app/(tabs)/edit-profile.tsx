@@ -1,49 +1,53 @@
-import React, { useEffect, useState } from 'react';
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  Alert,
-} from 'react-native';
-import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import * as ImagePicker from 'expo-image-picker';
-import { Image } from 'expo-image';
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { AuthInput } from '@/components/auth/AuthInput';
-import { AuthButton } from '@/components/auth/AuthButton';
-import { CountryDropdown } from '@/components/auth/CountryDropdown';
-import { PhoneInput } from '@/components/auth/PhoneInput';
-import { useAuth } from '@/contexts/AuthContext';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { getUserProfile, saveUserProfile, type UserProfile, type Gender } from '@/lib/userProfile';
-import type { Country } from '@/lib/countries';
-import { getCountryByCode, COUNTRIES } from '@/lib/countries';
-import { showToast } from '@/lib/toast';
+import { AuthButton } from "@/components/auth/AuthButton";
+import { AuthInput } from "@/components/auth/AuthInput";
+import { CountryDropdown } from "@/components/auth/CountryDropdown";
+import { PhoneInput } from "@/components/auth/PhoneInput";
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { useAuth } from "@/contexts/AuthContext";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import type { Country } from "@/lib/countries";
+import { COUNTRIES, getCountryByCode } from "@/lib/countries";
+import { showToast } from "@/lib/toast";
+import {
+    getUserProfile,
+    saveUserProfile,
+    type Gender
+} from "@/lib/userProfile";
 
 export default function EditProfileScreen() {
   const { user } = useAuth();
-  const colorScheme = useColorScheme() ?? 'light';
-  const isDark = colorScheme === 'dark';
+  const colorScheme = useColorScheme() ?? "light";
+  const isDark = colorScheme === "dark";
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [selectedCountryCode, setSelectedCountryCode] = useState<Country | null>(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [selectedCountryCode, setSelectedCountryCode] =
+    useState<Country | null>(null);
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [gender, setGender] = useState<Gender>('other');
+  const [gender, setGender] = useState<Gender>("other");
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState("");
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,20 +61,22 @@ export default function EditProfileScreen() {
     try {
       const profile = await getUserProfile(user.uid);
       if (profile) {
-        setName(profile.name || '');
-        setEmail(profile.email || '');
-        
+        setName(profile.name || "");
+        setEmail(profile.email || "");
+
         // Parse phone number and country code
-        const phoneNumberStr = profile.phoneNumber || '';
+        const phoneNumberStr = profile.phoneNumber || "";
         // Try to extract country code from phone number (format: +92XXXXXXXXXX)
         let extractedCountry: Country | null = null;
-        if (phoneNumberStr.startsWith('+')) {
+        if (phoneNumberStr.startsWith("+")) {
           // Find country by phone code
           for (const country of COUNTRIES) {
             if (phoneNumberStr.startsWith(country.phoneCode)) {
               extractedCountry = country;
               // Remove country code from phone number
-              const phoneWithoutCode = phoneNumberStr.substring(country.phoneCode.length).trim();
+              const phoneWithoutCode = phoneNumberStr
+                .substring(country.phoneCode.length)
+                .trim();
               setPhoneNumber(phoneWithoutCode);
               break;
             }
@@ -78,24 +84,26 @@ export default function EditProfileScreen() {
         } else {
           setPhoneNumber(phoneNumberStr);
         }
-        
-        setDateOfBirth(profile.dateOfBirth ? new Date(profile.dateOfBirth) : new Date());
-        setGender(profile.gender || 'other');
-        setCity(profile.city || '');
+
+        setDateOfBirth(
+          profile.dateOfBirth ? new Date(profile.dateOfBirth) : new Date(),
+        );
+        setGender(profile.gender || "other");
+        setCity(profile.city || "");
         setProfileImage(profile.profileImage || null);
-        
+
         // Load country from profile
         let country: Country | null = null;
         if (profile.countryCode) {
           // First try to get country by code
           country = getCountryByCode(profile.countryCode) || null;
         }
-        
+
         if (!country && profile.country) {
           // If country code not found, try to find by country name
-          country = COUNTRIES.find(c => c.name === profile.country) || null;
+          country = COUNTRIES.find((c) => c.name === profile.country) || null;
         }
-        
+
         if (country) {
           setSelectedCountry(country);
           // Set phone country code if not already set
@@ -111,8 +119,8 @@ export default function EditProfileScreen() {
         }
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
-      showToast.error('Error', 'Failed to load profile');
+      console.error("Error loading profile:", error);
+      showToast.error("Error", "Failed to load profile");
     } finally {
       setLoading(false);
     }
@@ -120,45 +128,51 @@ export default function EditProfileScreen() {
 
   const handleImagePick = async () => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
         showToast.error(
-          'Permission Required',
-          'Please enable photo library permission in settings.'
+          "Permission Required",
+          "Please enable photo library permission in settings.",
         );
         return;
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
+        mediaTypes: ["images"],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
       });
 
-      if (!result.canceled && result.assets && result.assets.length > 0 && result.assets[0]?.uri) {
+      if (
+        !result.canceled &&
+        result.assets &&
+        result.assets.length > 0 &&
+        result.assets[0]?.uri
+      ) {
         setProfileImage(result.assets[0].uri);
       } else if (result.canceled) {
         // User canceled, do nothing
         return;
       } else {
-        showToast.error('Error', 'No image selected or image data is invalid');
+        showToast.error("Error", "No image selected or image data is invalid");
       }
     } catch (error: any) {
-      showToast.error('Error', error?.message || 'Failed to pick image');
+      showToast.error("Error", error?.message || "Failed to pick image");
     }
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
+    setShowDatePicker(Platform.OS === "ios");
     if (selectedDate) {
       setDateOfBirth(selectedDate);
     }
@@ -167,7 +181,7 @@ export default function EditProfileScreen() {
   const handleSave = async () => {
     if (!user) return;
     if (!name.trim()) {
-      showToast.error('Validation Error', 'Name is required');
+      showToast.error("Validation Error", "Name is required");
       return;
     }
 
@@ -181,19 +195,19 @@ export default function EditProfileScreen() {
         name: name.trim(),
         email: email.trim(),
         phoneNumber: fullPhoneNumber,
-        dateOfBirth: dateOfBirth.toISOString().split('T')[0],
+        dateOfBirth: dateOfBirth.toISOString().split("T")[0],
         gender,
-        country: selectedCountry?.name || '',
-        countryCode: selectedCountry?.code || '',
+        country: selectedCountry?.name || "",
+        countryCode: selectedCountry?.code || "",
         city: city.trim(),
         // Only include profileImage if it has a value
-        ...(profileImage && profileImage.trim() !== '' ? { profileImage } : {}),
+        ...(profileImage && profileImage.trim() !== "" ? { profileImage } : {}),
       });
 
-      showToast.success('Success', 'Profile updated successfully');
+      showToast.success("Success", "Profile updated successfully");
       router.back();
     } catch (error: any) {
-      showToast.error('Error', error?.message || 'Failed to save profile');
+      showToast.error("Error", error?.message || "Failed to save profile");
     } finally {
       setSaving(false);
     }
@@ -216,7 +230,8 @@ export default function EditProfileScreen() {
           styles.scrollContent,
           { paddingTop: Math.max(insets.top + 8, 24) },
         ]}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         {/* Profile Image */}
         <View style={styles.profileImageContainer}>
           <TouchableOpacity onPress={handleImagePick} activeOpacity={0.8}>
@@ -227,8 +242,17 @@ export default function EditProfileScreen() {
                 contentFit="cover"
               />
             ) : (
-              <View style={[styles.profileImagePlaceholder, isDark && styles.profileImagePlaceholderDark]}>
-                <MaterialCommunityIcons name="camera" size={32} color="#0a7ea4" />
+              <View
+                style={[
+                  styles.profileImagePlaceholder,
+                  isDark && styles.profileImagePlaceholderDark,
+                ]}
+              >
+                <MaterialCommunityIcons
+                  name="camera"
+                  size={32}
+                  color="#0a7ea4"
+                />
               </View>
             )}
             <View style={[styles.editIcon, isDark && styles.editIconDark]}>
@@ -274,21 +298,22 @@ export default function EditProfileScreen() {
                 styles.dateButton,
                 isDark ? styles.dateButtonDark : styles.dateButtonLight,
               ]}
-              onPress={() => setShowDatePicker(true)}>
+              onPress={() => setShowDatePicker(true)}
+            >
               <ThemedText style={styles.dateText}>
                 {formatDate(dateOfBirth)}
               </ThemedText>
               <MaterialCommunityIcons
                 name="calendar"
                 size={20}
-                color={isDark ? '#9BA1A6' : '#687076'}
+                color={isDark ? "#9BA1A6" : "#687076"}
               />
             </TouchableOpacity>
             {showDatePicker && (
               <DateTimePicker
                 value={dateOfBirth}
                 mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={handleDateChange}
                 maximumDate={new Date()}
               />
@@ -299,7 +324,7 @@ export default function EditProfileScreen() {
           <View style={styles.inputContainer}>
             <ThemedText style={styles.label}>Gender</ThemedText>
             <View style={styles.genderContainer}>
-              {(['male', 'female', 'other'] as Gender[]).map((g) => (
+              {(["male", "female", "other"] as Gender[]).map((g) => (
                 <TouchableOpacity
                   key={g}
                   style={[
@@ -308,12 +333,14 @@ export default function EditProfileScreen() {
                     isDark && styles.genderButtonDark,
                     gender === g && isDark && styles.genderButtonActiveDark,
                   ]}
-                  onPress={() => setGender(g)}>
+                  onPress={() => setGender(g)}
+                >
                   <ThemedText
                     style={[
                       styles.genderText,
                       gender === g && styles.genderTextActive,
-                    ]}>
+                    ]}
+                  >
                     {g.charAt(0).toUpperCase() + g.slice(1)}
                   </ThemedText>
                 </TouchableOpacity>
@@ -358,8 +385,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   scrollContent: {
     flexGrow: 1,
@@ -367,7 +394,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   profileImageContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
     marginBottom: 32,
   },
@@ -376,36 +403,36 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     borderWidth: 4,
-    borderColor: '#0a7ea4',
+    borderColor: "#0a7ea4",
   },
   profileImagePlaceholder: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#E6F4FE',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#E6F4FE",
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 4,
-    borderColor: '#0a7ea4',
+    borderColor: "#0a7ea4",
   },
   profileImagePlaceholderDark: {
-    backgroundColor: '#1D3D47',
+    backgroundColor: "#1D3D47",
   },
   editIcon: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     right: 0,
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#0a7ea4',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#0a7ea4",
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 3,
-    borderColor: '#fff',
+    borderColor: "#fff",
   },
   editIconDark: {
-    borderColor: '#1C1C1E',
+    borderColor: "#1C1C1E",
   },
   form: {
     flex: 1,
@@ -415,55 +442,55 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
   },
   dateButton: {
     height: 52,
     borderRadius: 14,
     paddingHorizontal: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   dateButtonLight: {
-    backgroundColor: '#F1F3F4',
+    backgroundColor: "#F1F3F4",
   },
   dateButtonDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: "#2C2E31",
   },
   dateText: {
     fontSize: 16,
   },
   genderContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   genderButton: {
     flex: 1,
     height: 52,
     borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: '#dadce0',
+    borderColor: "#dadce0",
   },
   genderButtonDark: {
-    borderColor: '#3C3E42',
+    borderColor: "#3C3E42",
   },
   genderButtonActive: {
-    backgroundColor: '#0a7ea4',
-    borderColor: '#0a7ea4',
+    backgroundColor: "#0a7ea4",
+    borderColor: "#0a7ea4",
   },
   genderButtonActiveDark: {
-    backgroundColor: '#0a7ea4',
-    borderColor: '#0a7ea4',
+    backgroundColor: "#0a7ea4",
+    borderColor: "#0a7ea4",
   },
   genderText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   genderTextActive: {
-    color: '#fff',
+    color: "#fff",
   },
 });

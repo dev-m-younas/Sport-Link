@@ -19,7 +19,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useAuth } from '@/contexts/AuthContext';
 import { getActivitiesWithinRadius, type ActivityDoc } from '@/lib/activities';
-import { ACTIVITIES } from '@/constants/activities';
+import { ACTIVITIES, getActivityConfig } from '@/constants/activities';
 import { showToast } from '@/lib/toast';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { getUserProfile, type UserProfile } from '@/lib/userProfile';
@@ -80,6 +80,11 @@ function ActivityCard({
             <ThemedText style={styles.cardTitle}>{activityName}</ThemedText>
             <ThemedText style={styles.cardMeta}>
               {item.creatorName} · {item.level}
+              {(item.maxPlayers ?? getActivityConfig(item.activity)?.maxPlayers)
+                ? ` · Max ${item.maxPlayers ?? getActivityConfig(item.activity)?.maxPlayers}`
+                : (item.minPlayersPerTeam ?? getActivityConfig(item.activity)?.minPlayersPerTeam)
+                  ? ` · ${item.minPlayersPerTeam ?? getActivityConfig(item.activity)?.minPlayersPerTeam}/team`
+                  : ""}
             </ThemedText>
           </View>
         </View>

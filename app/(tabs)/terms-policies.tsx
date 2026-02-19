@@ -40,7 +40,16 @@ export default function TermsPoliciesScreen() {
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Privacy Policy</ThemedText>
           <ThemedText style={styles.sectionText}>
-            We respect your privacy and are committed to protecting your personal information. Your location data is used solely to show activities within your area and is not shared with third parties.
+            Sport Link is committed to protecting your privacy. This summary covers how we collect, use, and share your information.
+          </ThemedText>
+          <ThemedText style={[styles.sectionText, styles.subSection]}>
+            Information we collect: (1) Account & profile — name, email, phone, date of birth, gender, country, city, profile photo, sports interests, expertise level. (2) Location — used only to show activities and players near you and to set activity locations; not sold to third parties. (3) Activity data — activities you create or join, chat messages, join requests. (4) Push token — to send join requests, chat notifications, and activity reminders (with your permission).
+          </ThemedText>
+          <ThemedText style={[styles.sectionText, styles.subSection]}>
+            We use Firebase and Google Sign-In to run the app; Expo for push notifications. We do not sell your data. Other users may see your profile and activity-related info as needed for the app. You can update or delete your account, revoke location or notification permissions in device settings, and contact us for data requests or questions via Report a problem in the app.
+          </ThemedText>
+          <ThemedText style={[styles.sectionText, styles.subSection]}>
+            Full Privacy Policy: See PRIVACY_POLICY.md in the app project or request a copy from support. Last updated: February 2026.
           </ThemedText>
         </View>
 
@@ -94,5 +103,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     opacity: 0.9,
+  },
+  subSection: {
+    marginTop: 10,
   },
 });

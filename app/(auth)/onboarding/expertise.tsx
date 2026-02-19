@@ -67,15 +67,19 @@ export default function ExpertiseScreen() {
         activities,
         expertiseLevel: selectedLevel,
         // Only include profileImage if it exists and is not empty
-        ...(params.profileImage && (params.profileImage as string).trim() !== '' 
-          ? { profileImage: params.profileImage as string } 
+        ...(params.profileImage && (params.profileImage as string).trim() !== ''
+          ? { profileImage: params.profileImage as string }
           : {}),
         onboardingCompleted: true,
       });
 
+      // Save push token to DB (for join requests, chat notifications)
+      const { savePushToken } = await import('@/lib/chatPushNotifications');
+      savePushToken(user.uid).catch(() => {});
+
       // Refresh onboarding status
       await refreshOnboardingStatus();
-      
+
       // Redirect to welcome screens
       router.replace('/(auth)/onboarding/welcome-1');
     } catch (error) {

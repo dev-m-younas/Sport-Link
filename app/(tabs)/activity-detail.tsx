@@ -16,7 +16,7 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColors } from '@/hooks/use-theme-colors';
-import { ACTIVITIES, EXPERTISE_LEVELS } from '@/constants/activities';
+import { ACTIVITIES, EXPERTISE_LEVELS, getActivityConfig } from '@/constants/activities';
 import { getActivityById, type ActivityDoc } from '@/lib/activities';
 import { useAuth } from '@/contexts/AuthContext';
 import { createJoinRequest } from '@/lib/notifications';
@@ -287,6 +287,28 @@ export default function ActivityDetailScreen() {
               )}
             </View>
           </View>
+
+          {/* Players info - use doc values or fallback to config */}
+          {(() => {
+            const maxP = activity.maxPlayers ?? getActivityConfig(activity.activity)?.maxPlayers;
+            const minP = activity.minPlayersPerTeam ?? getActivityConfig(activity.activity)?.minPlayersPerTeam;
+            if (!maxP && !minP) return null;
+            return (
+              <View style={styles.detailRow}>
+                <MaterialCommunityIcons
+                  name="account-group"
+                  size={20}
+                  color="#0a7ea4"
+                />
+                <View style={styles.detailContent}>
+                  <ThemedText style={styles.detailLabel}>Players</ThemedText>
+                  <ThemedText style={styles.detailValue}>
+                    {maxP ? `Max ${maxP} players` : minP ? `Min ${minP} per team` : ""}
+                  </ThemedText>
+                </View>
+              </View>
+            );
+          })()}
 
           {/* Creator */}
           <View style={styles.detailRow}>

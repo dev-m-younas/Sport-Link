@@ -19,7 +19,7 @@
       "package": "com.sportlink.app",
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyDMjJ1D4I-E9ISD5QTCON_YxoLKhweiWpQ"
+          "apiKey": "${process.env.GOOGLE_MAPS_API_KEY}"
         }
       },
       "adaptiveIcon": {

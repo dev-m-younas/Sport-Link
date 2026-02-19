@@ -28,7 +28,7 @@ function AppContent() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: colorScheme === 'dark' ? '#151718' : '#fff' },
+          contentStyle: { backgroundColor: colorScheme === 'dark' ? '#222831' : '#fff' },
         }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />

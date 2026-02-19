@@ -9,10 +9,12 @@
       ]
     },
     {
-      "collectionGroup": "activities",
+      "collectionGroup": "scheduledActivities",
       "queryScope": "COLLECTION",
       "fields": [
-        {"fieldPath": "createdAt", "order": "DESCENDING"}
+        {"fieldPath": "userId", "order": "ASCENDING"},
+        {"fieldPath": "activityDate", "order": "ASCENDING"},
+        {"fieldPath": "activityTime", "order": "ASCENDING"}
       ]
     }
   ],

@@ -74,7 +74,7 @@ export default function ChatDetailScreen() {
   const params = useLocalSearchParams();
   const otherUserId = params.userId as string;
   const colors = useThemeColors();
-  const isDark = colors.background === '#151718';
+  const isDark = colors.background === '#222831';
   const insets = useSafeAreaInsets();
 
   const [messages, setMessages] = useState<MessageDoc[]>([]);
@@ -170,7 +170,7 @@ export default function ChatDetailScreen() {
     return (
       <ThemedView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0a7ea4" />
+          <ActivityIndicator size="large" color="#00ADB5" />
           <ThemedText style={styles.loadingText}>Loading chat...</ThemedText>
         </View>
       </ThemedView>
@@ -219,7 +219,7 @@ export default function ChatDetailScreen() {
           showsVerticalScrollIndicator={false}>
           {loading ? (
             <View style={styles.loadingMessages}>
-              <ActivityIndicator size="small" color="#0a7ea4" />
+              <ActivityIndicator size="small" color="#00ADB5" />
             </View>
           ) : messages.length === 0 ? (
             <View style={styles.emptyMessages}>
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   messageBubbleMe: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: '#00ADB5',
     borderBottomRightRadius: 4,
   },
   messageBubbleOther: {

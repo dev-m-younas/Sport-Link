@@ -1,19 +1,17 @@
 import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  serverTimestamp,
-  type Timestamp,
-  doc,
-  getDoc,
-} from 'firebase/firestore';
-import { db } from './firebase';
-import { getActivityById, type ActivityDoc } from './activities';
+    addDoc,
+    collection,
+    getDocs,
+    orderBy,
+    query,
+    serverTimestamp,
+    where,
+    type Timestamp
+} from "firebase/firestore";
+import { getActivityById } from "./activities";
+import { db } from "./firebase";
 
-const SCHEDULED_ACTIVITIES_COLLECTION = 'scheduledActivities';
+const SCHEDULED_ACTIVITIES_COLLECTION = "scheduledActivities";
 
 export interface ScheduledActivityDoc {
   id: string;
@@ -49,13 +47,13 @@ export interface CreateScheduledActivityInput {
  * Create scheduled activities for both users when join request is accepted
  */
 export async function createScheduledActivityForBothUsers(
-  input: CreateScheduledActivityInput
+  input: CreateScheduledActivityInput,
 ): Promise<void> {
   try {
     // Get activity details
     const activity = await getActivityById(input.activityId);
     if (!activity) {
-      throw new Error('Activity not found');
+      throw new Error("Activity not found");
     }
 
     const now = new Date().toISOString();
@@ -109,13 +107,13 @@ export async function createScheduledActivityForBothUsers(
     // Check if scheduled activity already exists to avoid duplicates
     const existingQuery1 = query(
       collection(db, SCHEDULED_ACTIVITIES_COLLECTION),
-      where('activityId', '==', input.activityId),
-      where('userId', '==', input.userId1)
+      where("activityId", "==", input.activityId),
+      where("userId", "==", input.userId1),
     );
     const existingQuery2 = query(
       collection(db, SCHEDULED_ACTIVITIES_COLLECTION),
-      where('activityId', '==', input.activityId),
-      where('userId', '==', input.userId2)
+      where("activityId", "==", input.activityId),
+      where("userId", "==", input.userId2),
     );
 
     const [existing1, existing2] = await Promise.all([
@@ -128,7 +126,10 @@ export async function createScheduledActivityForBothUsers(
     let scheduled2: ScheduledActivityDoc | null = null;
 
     if (existing1.empty) {
-      const ref1 = await addDoc(collection(db, SCHEDULED_ACTIVITIES_COLLECTION), scheduledActivity1);
+      const ref1 = await addDoc(
+        collection(db, SCHEDULED_ACTIVITIES_COLLECTION),
+        scheduledActivity1,
+      );
       scheduled1 = {
         id: ref1.id,
         ...scheduledActivity1,
@@ -137,7 +138,10 @@ export async function createScheduledActivityForBothUsers(
     }
 
     if (existing2.empty) {
-      const ref2 = await addDoc(collection(db, SCHEDULED_ACTIVITIES_COLLECTION), scheduledActivity2);
+      const ref2 = await addDoc(
+        collection(db, SCHEDULED_ACTIVITIES_COLLECTION),
+        scheduledActivity2,
+      );
       scheduled2 = {
         id: ref2.id,
         ...scheduledActivity2,
@@ -146,7 +150,8 @@ export async function createScheduledActivityForBothUsers(
     }
 
     // Schedule notifications for both users
-    const { scheduleActivityNotification } = await import('./activityNotifications');
+    const { scheduleActivityNotification } =
+      await import("./activityNotifications");
     if (scheduled1) {
       await scheduleActivityNotification(scheduled1);
     }
@@ -154,7 +159,7 @@ export async function createScheduledActivityForBothUsers(
       await scheduleActivityNotification(scheduled2);
     }
   } catch (error: any) {
-    console.error('Error creating scheduled activities:', error);
+    console.error("Error creating scheduled activities:", error);
     throw error;
   }
 }
@@ -163,14 +168,14 @@ export async function createScheduledActivityForBothUsers(
  * Get all scheduled activities for a user
  */
 export async function getUserScheduledActivities(
-  userId: string
+  userId: string,
 ): Promise<ScheduledActivityDoc[]> {
   try {
     const q = query(
       collection(db, SCHEDULED_ACTIVITIES_COLLECTION),
-      where('userId', '==', userId),
-      orderBy('activityDate', 'asc'),
-      orderBy('activityTime', 'asc')
+      where("userId", "==", userId),
+      orderBy("activityDate", "asc"),
+      orderBy("activityTime", "asc"),
     );
 
     const snapshot = await getDocs(q);
@@ -182,22 +187,22 @@ export async function getUserScheduledActivities(
 
       scheduledActivities.push({
         id: docSnap.id,
-        activityId: d.activityId ?? '',
-        userId: d.userId ?? '',
-        partnerUserId: d.partnerUserId ?? '',
-        partnerName: d.partnerName ?? 'User',
+        activityId: d.activityId ?? "",
+        userId: d.userId ?? "",
+        partnerUserId: d.partnerUserId ?? "",
+        partnerName: d.partnerName ?? "User",
         partnerProfileImage: d.partnerProfileImage ?? undefined,
-        activityName: d.activityName ?? '',
-        activityDate: d.activityDate ?? '',
-        activityTime: d.activityTime ?? '',
-        location: d.location ?? '',
+        activityName: d.activityName ?? "",
+        activityDate: d.activityDate ?? "",
+        activityTime: d.activityTime ?? "",
+        location: d.location ?? "",
         locationLat: d.locationLat ?? 0,
         locationLong: d.locationLong ?? 0,
-        level: d.level ?? '',
+        level: d.level ?? "",
         notes: d.notes ?? undefined,
         notificationSent: d.notificationSent ?? false,
         notificationId: d.notificationId ?? undefined,
-        createdAt: createdAt ? createdAt.toDate().toISOString() : '',
+        createdAt: createdAt ? createdAt.toDate().toISOString() : "",
       });
     });
 
@@ -210,23 +215,26 @@ export async function getUserScheduledActivities(
 
     return scheduledActivities;
   } catch (error) {
-    console.error('Error fetching scheduled activities:', error);
+    console.error("Error fetching scheduled activities:", error);
     throw error;
   }
 }
 
 /**
- * Get activities that need notification (1 hour before)
- * This would typically be called by a scheduled job/cloud function
+ * Get activities that need notification (1 hour before) for a specific user.
+ * Must filter by userId to comply with Firestore security rules.
  */
-export async function getActivitiesNeedingNotification(): Promise<ScheduledActivityDoc[]> {
+export async function getActivitiesNeedingNotification(
+  userId: string,
+): Promise<ScheduledActivityDoc[]> {
   try {
     const now = new Date();
     const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
 
     const q = query(
       collection(db, SCHEDULED_ACTIVITIES_COLLECTION),
-      where('notificationSent', '==', false)
+      where("userId", "==", userId),
+      where("notificationSent", "==", false),
     );
 
     const snapshot = await getDocs(q);
@@ -237,34 +245,34 @@ export async function getActivitiesNeedingNotification(): Promise<ScheduledActiv
       const createdAt = d.createdAt as Timestamp | null;
 
       const activityDateTime = new Date(`${d.activityDate}T${d.activityTime}`);
-      
+
       // Check if activity is within 1 hour
       if (activityDateTime >= now && activityDateTime <= oneHourLater) {
         activities.push({
           id: docSnap.id,
-          activityId: d.activityId ?? '',
-          userId: d.userId ?? '',
-          partnerUserId: d.partnerUserId ?? '',
-          partnerName: d.partnerName ?? 'User',
+          activityId: d.activityId ?? "",
+          userId: d.userId ?? "",
+          partnerUserId: d.partnerUserId ?? "",
+          partnerName: d.partnerName ?? "User",
           partnerProfileImage: d.partnerProfileImage ?? undefined,
-          activityName: d.activityName ?? '',
-          activityDate: d.activityDate ?? '',
-          activityTime: d.activityTime ?? '',
-          location: d.location ?? '',
+          activityName: d.activityName ?? "",
+          activityDate: d.activityDate ?? "",
+          activityTime: d.activityTime ?? "",
+          location: d.location ?? "",
           locationLat: d.locationLat ?? 0,
           locationLong: d.locationLong ?? 0,
-          level: d.level ?? '',
+          level: d.level ?? "",
           notes: d.notes ?? undefined,
           notificationSent: d.notificationSent ?? false,
           notificationId: d.notificationId ?? undefined,
-          createdAt: createdAt ? createdAt.toDate().toISOString() : '',
+          createdAt: createdAt ? createdAt.toDate().toISOString() : "",
         });
       }
     });
 
     return activities;
   } catch (error) {
-    console.error('Error fetching activities needing notification:', error);
+    console.error("Error fetching activities needing notification:", error);
     throw error;
   }
 }

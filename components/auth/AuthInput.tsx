@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     color: '#11181C',
   },
   inputDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: '#393E46',
     color: '#ECEDEE',
   },
   inputError: {

@@ -312,13 +312,13 @@ export default function CreateActivityScreen() {
             {/* Info for limited (max 4) and open */}
             {selectedActivity && getActivityConfig(selectedActivity)?.type === "limited" && (
               <View style={[styles.infoBanner, isDark && styles.infoBannerDark]}>
-                <MaterialCommunityIcons name="account-group" size={20} color="#0a7ea4" />
+                <MaterialCommunityIcons name="account-group" size={20} color="#00ADB5" />
                 <ThemedText style={styles.infoBannerText}>Max 4 players</ThemedText>
               </View>
             )}
             {selectedActivity && getActivityConfig(selectedActivity)?.type === "open" && (
               <View style={[styles.infoBanner, isDark && styles.infoBannerDark]}>
-                <MaterialCommunityIcons name="run" size={20} color="#0a7ea4" />
+                <MaterialCommunityIcons name="run" size={20} color="#00ADB5" />
                 <ThemedText style={styles.infoBannerText}>Open - jitne bhi aayein, group ban jayega</ThemedText>
               </View>
             )}
@@ -408,7 +408,7 @@ export default function CreateActivityScreen() {
                     <MaterialCommunityIcons
                       name="map-marker"
                       size={20}
-                      color="#0a7ea4"
+                      color="#00ADB5"
                     />
                     <View style={styles.locationTextContainer}>
                       <Text
@@ -500,7 +500,7 @@ export default function CreateActivityScreen() {
                 <MaterialCommunityIcons
                   name={videoUri ? "check-circle" : "video-plus"}
                   size={24}
-                  color={videoUri ? "#0a7ea4" : isDark ? "#9BA1A6" : "#687076"}
+                  color={videoUri ? "#00ADB5" : isDark ? "#9BA1A6" : "#687076"}
                 />
                 <Text
                   style={[
@@ -605,14 +605,14 @@ const styles = StyleSheet.create({
   },
   playerChipDark: {
     borderColor: "#3C3E42",
-    backgroundColor: "#2C2E31",
+    backgroundColor: "#393E46",
   },
   playerChipActive: {
-    borderColor: "#0a7ea4",
-    backgroundColor: "#E6F4FE",
+    borderColor: "#00ADB5",
+    backgroundColor: "rgba(0,173,181,0.15)",
   },
   playerChipActiveDark: {
-    borderColor: "#0a7ea4",
+    borderColor: "#00ADB5",
     backgroundColor: "rgba(10,126,164,0.2)",
   },
   playerChipText: {
@@ -620,7 +620,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   playerChipTextActive: {
-    color: "#0a7ea4",
+    color: "#00ADB5",
   },
   hintText: {
     fontSize: 13,
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
     gap: 10,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: "#E6F4FE",
+    backgroundColor: "rgba(0,173,181,0.15)",
     marginBottom: 16,
   },
   infoBannerDark: {
@@ -659,7 +659,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1F3F4",
   },
   dateButtonDark: {
-    backgroundColor: "#2C2E31",
+    backgroundColor: "#393E46",
   },
   dateText: {
     fontSize: 16,
@@ -686,7 +686,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1F3F4",
   },
   videoButtonDark: {
-    backgroundColor: "#2C2E31",
+    backgroundColor: "#393E46",
   },
   videoText: {
     fontSize: 16,
@@ -709,7 +709,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1F3F4",
   },
   mapButtonDark: {
-    backgroundColor: "#2C2E31",
+    backgroundColor: "#393E46",
   },
   locationPlaceholder: {
     flexDirection: "row",
@@ -776,7 +776,7 @@ const styles = StyleSheet.create({
     color: "#11181C",
   },
   notesInputDark: {
-    backgroundColor: "#2C2E31",
+    backgroundColor: "#393E46",
     color: "#ECEDEE",
   },
   submitButton: {

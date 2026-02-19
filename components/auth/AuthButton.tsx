@@ -45,7 +45,7 @@ export function AuthButton({
             variant === 'google'
               ? '#333'
               : variant === 'outline' || variant === 'secondary'
-                ? '#0a7ea4'
+                ? '#00ADB5'
                 : '#fff'
           }
           size="small"
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   primary: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: '#00ADB5',
   },
   secondary: {
     backgroundColor: 'transparent',
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#0a7ea4',
+    borderColor: '#00ADB5',
   },
   google: {
     backgroundColor: '#fff',
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   textSecondary: {
-    color: '#0a7ea4',
+    color: '#00ADB5',
   },
   textGoogle: {
     color: '#333',

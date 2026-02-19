@@ -105,7 +105,7 @@ export default function ExpertiseScreen() {
               <MaterialCommunityIcons
                 name="trophy"
                 size={40}
-                color="#0a7ea4"
+                color="#00ADB5"
               />
             </View>
             <ThemedText type="title" style={styles.title}>
@@ -140,7 +140,7 @@ export default function ExpertiseScreen() {
                     <MaterialCommunityIcons
                       name={item.icon as any}
                       size={48}
-                      color={isSelected ? '#fff' : '#0a7ea4'}
+                      color={isSelected ? '#fff' : '#00ADB5'}
                     />
                   </View>
                   <Text
@@ -163,7 +163,7 @@ export default function ExpertiseScreen() {
                       <MaterialCommunityIcons
                         name="check-circle"
                         size={28}
-                        color="#0a7ea4"
+                        color="#00ADB5"
                       />
                     </View>
                   )}
@@ -213,13 +213,13 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#E6F4FE',
+    backgroundColor: 'rgba(0,173,181,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
   iconCircleDark: {
-    backgroundColor: '#1D3D47',
+    backgroundColor: 'rgba(0,173,181,0.2)',
   },
   title: {
     marginBottom: 8,
@@ -245,15 +245,15 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   levelCardDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: '#393E46',
   },
   levelCardSelected: {
-    backgroundColor: '#E6F4FE',
-    borderColor: '#0a7ea4',
+    backgroundColor: 'rgba(0,173,181,0.15)',
+    borderColor: '#00ADB5',
   },
   levelCardSelectedDark: {
-    backgroundColor: '#1D3D47',
-    borderColor: '#0a7ea4',
+    backgroundColor: 'rgba(0,173,181,0.2)',
+    borderColor: '#00ADB5',
   },
   iconContainer: {
     width: 96,
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3C3E42',
   },
   iconContainerSelected: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: '#00ADB5',
   },
   levelLabel: {
     fontSize: 22,
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     color: '#ECEDEE',
   },
   levelLabelSelected: {
-    color: '#0a7ea4',
+    color: '#00ADB5',
   },
   levelDescription: {
     fontSize: 14,

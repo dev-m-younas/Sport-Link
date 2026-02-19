@@ -1,62 +1,64 @@
 /**
- * App colors for light and dark mode.
- * Use useThemeColors() or useThemeColor() to get current scheme colors.
+ * App colors - Dark Space palette
+ * #222831 black, #393E46 grey, #00ADB5 teal, #EEEEEE light
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#5eb8e6';
+const teal = '#00ADB5';
+const black = '#222831';
+const grey = '#393E46';
+const light = '#EEEEEE';
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    textSecondary: '#687076',
+    text: black,
+    textSecondary: grey,
     background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    tint: teal,
+    icon: grey,
+    tabIconDefault: grey,
+    tabIconSelected: teal,
     // Surfaces
-    card: '#F1F3F4',
-    cardIconBg: '#E6F4FE',
-    input: '#F1F3F4',
-    border: '#E5E5E5',
+    card: '#F5F5F5',
+    cardIconBg: 'rgba(0,173,181,0.12)',
+    input: '#F5F5F5',
+    border: '#E0E0E0',
     // Tab bar
     tabBarBg: '#fff',
-    tabBarBorder: '#E5E5E5',
+    tabBarBorder: '#E0E0E0',
     // Buttons / chips
-    buttonSecondary: '#F1F3F4',
-    chipBg: '#E6F4FE',
-    chipText: tintColorLight,
+    buttonSecondary: '#F5F5F5',
+    chipBg: 'rgba(0,173,181,0.12)',
+    chipText: teal,
     // Semantic
     success: '#10B981',
     error: '#EF4444',
     errorBg: '#FEE2E2',
     errorText: '#991B1B',
     warningBg: '#FEF3C7',
-    placeholder: '#687076',
+    placeholder: grey,
   },
   dark: {
-    text: '#ECEDEE',
+    text: light,
     textSecondary: '#9BA1A6',
-    background: '#151718',
-    tint: tintColorDark,
+    background: black,
+    tint: teal,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    tabIconSelected: teal,
     // Surfaces
-    card: '#2C2E31',
-    cardIconBg: '#1D3D47',
-    input: '#2C2E31',
-    border: '#2C2E31',
+    card: grey,
+    cardIconBg: 'rgba(0,173,181,0.2)',
+    input: grey,
+    border: grey,
     // Tab bar
-    tabBarBg: '#1C1C1E',
-    tabBarBorder: '#2C2E31',
+    tabBarBg: black,
+    tabBarBorder: grey,
     // Buttons / chips
-    buttonSecondary: '#2C2E31',
-    chipBg: '#1D3D47',
-    chipText: tintColorDark,
+    buttonSecondary: grey,
+    chipBg: 'rgba(0,173,181,0.2)',
+    chipText: teal,
     // Semantic
     success: '#34D399',
     error: '#EF4444',

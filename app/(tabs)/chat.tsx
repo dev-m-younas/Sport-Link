@@ -138,7 +138,7 @@ function ConversationItem({
 export default function ChatScreen() {
   const { user } = useAuth();
   const colors = useThemeColors();
-  const isDark = colors.background === '#151718';
+  const isDark = colors.background === '#222831';
   const insets = useSafeAreaInsets();
 
   const [conversations, setConversations] = useState<ConversationDoc[]>([]);

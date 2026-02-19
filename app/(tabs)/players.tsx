@@ -58,7 +58,7 @@ function PlayerCard({
             />
           ) : (
             <View style={[styles.profileImagePlaceholder, isDark && styles.profileImagePlaceholderDark]}>
-              <MaterialCommunityIcons name="account" size={24} color="#0a7ea4" />
+              <MaterialCommunityIcons name="account" size={24} color="#00ADB5" />
             </View>
           )}
           <View style={styles.cardInfo}>
@@ -83,7 +83,7 @@ function PlayerCard({
                   <MaterialCommunityIcons
                     name={(activity?.icon as any) || 'run'}
                     size={14}
-                    color="#0a7ea4"
+                    color="#00ADB5"
                   />
                   <ThemedText style={styles.activityBadgeText}>
                     {getActivityName(activityId)}
@@ -188,7 +188,7 @@ export default function PlayersScreen() {
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#0a7ea4" />
+          <ActivityIndicator size="large" color="#00ADB5" />
           <ThemedText style={styles.loadingText}>Loading players...</ThemedText>
         </View>
       ) : players.length === 0 && !locationDenied ? (
@@ -209,7 +209,7 @@ export default function PlayersScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#0a7ea4']}
+              colors={['#00ADB5']}
             />
           }
         />
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F3F4',
   },
   cardDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: '#393E46',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     marginRight: 12,
     borderWidth: 2,
-    borderColor: '#0a7ea4',
+    borderColor: '#00ADB5',
   },
   profileImagePlaceholder: {
     width: 56,
@@ -302,10 +302,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#0a7ea4',
+    borderColor: '#00ADB5',
   },
   profileImagePlaceholderDark: {
-    backgroundColor: '#1D3D47',
+    backgroundColor: 'rgba(0,173,181,0.2)',
   },
   cardInfo: {
     flex: 1,
@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
   cardDistance: {
     fontSize: 12,
     opacity: 0.6,
-    color: '#0a7ea4',
+    color: '#00ADB5',
   },
   activitiesRow: {
     flexDirection: 'row',
@@ -341,12 +341,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#E6F4FE',
   },
   activityBadgeDark: {
-    backgroundColor: '#1D3D47',
+    backgroundColor: 'rgba(0,173,181,0.2)',
   },
   activityBadgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#0a7ea4',
+    color: '#00ADB5',
   },
   moreActivities: {
     fontSize: 12,

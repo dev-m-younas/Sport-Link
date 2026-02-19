@@ -251,7 +251,7 @@ export default function EditProfileScreen() {
                 <MaterialCommunityIcons
                   name="camera"
                   size={32}
-                  color="#0a7ea4"
+                  color="#00ADB5"
                 />
               </View>
             )}
@@ -403,20 +403,20 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     borderWidth: 4,
-    borderColor: "#0a7ea4",
+    borderColor: "#00ADB5",
   },
   profileImagePlaceholder: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "#E6F4FE",
+    backgroundColor: "rgba(0,173,181,0.15)",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 4,
-    borderColor: "#0a7ea4",
+    borderColor: "#00ADB5",
   },
   profileImagePlaceholderDark: {
-    backgroundColor: "#1D3D47",
+    backgroundColor: "rgba(0,173,181,0.2)",
   },
   editIcon: {
     position: "absolute",
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#0a7ea4",
+    backgroundColor: "#00ADB5",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 3,
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1F3F4",
   },
   dateButtonDark: {
-    backgroundColor: "#2C2E31",
+    backgroundColor: "#393E46",
   },
   dateText: {
     fontSize: 16,
@@ -479,12 +479,12 @@ const styles = StyleSheet.create({
     borderColor: "#3C3E42",
   },
   genderButtonActive: {
-    backgroundColor: "#0a7ea4",
-    borderColor: "#0a7ea4",
+    backgroundColor: "#00ADB5",
+    borderColor: "#00ADB5",
   },
   genderButtonActiveDark: {
-    backgroundColor: "#0a7ea4",
-    borderColor: "#0a7ea4",
+    backgroundColor: "#00ADB5",
+    borderColor: "#00ADB5",
   },
   genderText: {
     fontSize: 16,

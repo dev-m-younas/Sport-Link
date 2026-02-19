@@ -56,7 +56,7 @@ export default function PlayerDetailScreen() {
   const params = useLocalSearchParams();
   const playerId = params.id as string;
   const colors = useThemeColors();
-  const isDark = colors.background === '#151718';
+  const isDark = colors.background === '#222831';
   const insets = useSafeAreaInsets();
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -96,7 +96,7 @@ export default function PlayerDetailScreen() {
     return (
       <ThemedView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0a7ea4" />
+          <ActivityIndicator size="large" color="#00ADB5" />
           <ThemedText style={styles.loadingText}>Loading player...</ThemedText>
         </View>
       </ThemedView>
@@ -171,7 +171,7 @@ export default function PlayerDetailScreen() {
               <MaterialCommunityIcons
                 name="account"
                 size={20}
-                color="#0a7ea4"
+                color="#00ADB5"
               />
               <View style={styles.detailContent}>
                 <ThemedText style={styles.detailLabel}>Age & Gender</ThemedText>
@@ -187,7 +187,7 @@ export default function PlayerDetailScreen() {
             <MaterialCommunityIcons
               name="map-marker"
               size={20}
-              color="#0a7ea4"
+              color="#00ADB5"
             />
             <View style={styles.detailContent}>
               <ThemedText style={styles.detailLabel}>Location</ThemedText>
@@ -202,7 +202,7 @@ export default function PlayerDetailScreen() {
             <MaterialCommunityIcons
               name="trophy"
               size={20}
-              color="#0a7ea4"
+              color="#00ADB5"
             />
             <View style={styles.detailContent}>
               <ThemedText style={styles.detailLabel}>Expertise Level</ThemedText>
@@ -227,7 +227,7 @@ export default function PlayerDetailScreen() {
                     <MaterialCommunityIcons
                       name={(activity?.icon as any) || 'run'}
                       size={20}
-                      color="#0a7ea4"
+                      color="#00ADB5"
                     />
                     <ThemedText style={styles.activityChipText}>
                       {getActivityName(activityId)}
@@ -372,19 +372,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#E6F4FE',
+    backgroundColor: 'rgba(0,173,181,0.15)',
   },
   activityChipDark: {
-    backgroundColor: '#1D3D47',
+    backgroundColor: 'rgba(0,173,181,0.2)',
   },
   activityChipText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#0a7ea4',
+    color: '#00ADB5',
   },
   backButtonText: {
     fontSize: 16,
-    color: '#0a7ea4',
+    color: '#00ADB5',
     fontWeight: '600',
   },
   chatButtonContainer: {

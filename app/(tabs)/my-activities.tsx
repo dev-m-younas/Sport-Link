@@ -67,7 +67,7 @@ function ActivityCard({
                 'run'
               }
               size={24}
-              color="#0a7ea4"
+              color="#00ADB5"
             />
           </View>
           <View style={styles.cardTitleBlock}>
@@ -151,7 +151,7 @@ export default function MyActivitiesScreen() {
 
       {loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#0a7ea4" />
+          <ActivityIndicator size="large" color="#00ADB5" />
           <ThemedText style={styles.loadingText}>Loading activities...</ThemedText>
         </View>
       ) : activities.length === 0 ? (
@@ -172,7 +172,7 @@ export default function MyActivitiesScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#0a7ea4']}
+              colors={['#00ADB5']}
             />
           }
         />
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F3F4',
   },
   cardDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: '#393E46',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -237,13 +237,13 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#E6F4FE',
+    backgroundColor: 'rgba(0,173,181,0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   iconWrapDark: {
-    backgroundColor: '#1D3D47',
+    backgroundColor: 'rgba(0,173,181,0.2)',
   },
   cardTitleBlock: {
     flex: 1,

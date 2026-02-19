@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F3F4',
   },
   inputContainerDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: '#393E46',
   },
   countryCodeButton: {
     flexDirection: 'row',
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F6F7',
   },
   searchWrapDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: '#393E46',
   },
   searchInput: {
     flex: 1,
@@ -431,10 +431,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F6F7',
   },
   countryCardDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: '#393E46',
   },
   countryCardSelectedLight: {
-    backgroundColor: '#E6F4FE',
+    backgroundColor: 'rgba(0,173,181,0.15)',
   },
   countryCardSelectedDark: {
     backgroundColor: 'rgba(10,126,164,0.15)',

@@ -1,24 +1,27 @@
-import Constants from 'expo-constants';
-import { Platform } from 'react-native';
-import { updateDoc, doc } from 'firebase/firestore';
-import { db } from './firebase';
-import { ACTIVITIES } from '@/constants/activities';
-import type { ScheduledActivityDoc } from './scheduledActivities';
+import { ACTIVITIES } from "@/constants/activities";
+import Constants from "expo-constants";
+import { doc, updateDoc } from "firebase/firestore";
+import { Platform } from "react-native";
+import { db } from "./firebase";
+import type { ScheduledActivityDoc } from "./scheduledActivities";
 
-const SCHEDULED_ACTIVITIES_COLLECTION = 'scheduledActivities';
+const SCHEDULED_ACTIVITIES_COLLECTION = "scheduledActivities";
 
 /** Lazy-load expo-notifications to avoid crash in Expo Go (not supported there) */
-let _notifications: typeof import('expo-notifications') | null | undefined = undefined;
+let _notifications: typeof import("expo-notifications") | null | undefined =
+  undefined;
 
-async function getNotifications(): Promise<typeof import('expo-notifications') | null> {
+async function getNotifications(): Promise<
+  typeof import("expo-notifications") | null
+> {
   if (_notifications !== undefined) return _notifications;
   // Never load expo-notifications in Expo Go - it throws
-  if (Constants.appOwnership === 'expo') {
+  if (Constants.appOwnership === "expo") {
     _notifications = null;
     return null;
   }
   try {
-    _notifications = await import('expo-notifications');
+    _notifications = await import("expo-notifications");
     return _notifications;
   } catch {
     _notifications = null;
@@ -44,43 +47,44 @@ export async function requestNotificationPermissions(): Promise<boolean> {
         shouldSetBadge: true,
       }),
     });
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
-    if (existingStatus !== 'granted') {
+    if (existingStatus !== "granted") {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
 
-    if (finalStatus !== 'granted') {
-      console.warn('Notification permissions not granted');
+    if (finalStatus !== "granted") {
+      console.warn("Notification permissions not granted");
       return false;
     }
 
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('activity-reminders', {
-        name: 'Activity Reminders',
+    if (Platform.OS === "android") {
+      await Notifications.setNotificationChannelAsync("activity-reminders", {
+        name: "Activity Reminders",
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#0a7ea4',
+        lightColor: "#00ADB5",
       });
-      await Notifications.setNotificationChannelAsync('chat', {
-        name: 'Chat Messages',
+      await Notifications.setNotificationChannelAsync("chat", {
+        name: "Chat Messages",
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#0a7ea4',
+        lightColor: "#00ADB5",
       });
-      await Notifications.setNotificationChannelAsync('join-request', {
-        name: 'Join Activity Requests',
+      await Notifications.setNotificationChannelAsync("join-request", {
+        name: "Join Activity Requests",
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#0a7ea4',
+        lightColor: "#00ADB5",
       });
     }
 
     return true;
   } catch (error) {
-    console.error('Error requesting notification permissions:', error);
+    console.error("Error requesting notification permissions:", error);
     return false;
   }
 }
@@ -89,7 +93,7 @@ export async function requestNotificationPermissions(): Promise<boolean> {
  * Schedule a notification for 1 hour before activity
  */
 export async function scheduleActivityNotification(
-  scheduledActivity: ScheduledActivityDoc
+  scheduledActivity: ScheduledActivityDoc,
 ): Promise<string | null> {
   const Notifications = await getNotifications();
   if (!Notifications) return null;
@@ -98,7 +102,7 @@ export async function scheduleActivityNotification(
     if (!hasPermission) return null;
 
     const activityDateTime = new Date(
-      `${scheduledActivity.activityDate}T${scheduledActivity.activityTime}`
+      `${scheduledActivity.activityDate}T${scheduledActivity.activityTime}`,
     );
     const oneHourBefore = new Date(activityDateTime.getTime() - 60 * 60 * 1000);
     const now = new Date();
@@ -109,7 +113,7 @@ export async function scheduleActivityNotification(
 
     const notificationId = await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Activity Reminder',
+        title: "Activity Reminder",
         body: `Your ${activityName} activity with ${scheduledActivity.partnerName} starts in 1 hour!`,
         data: {
           scheduledActivityId: scheduledActivity.id,
@@ -125,7 +129,7 @@ export async function scheduleActivityNotification(
     const scheduledActivityRef = doc(
       db,
       SCHEDULED_ACTIVITIES_COLLECTION,
-      scheduledActivity.id
+      scheduledActivity.id,
     );
     await updateDoc(scheduledActivityRef, {
       notificationSent: false,
@@ -134,7 +138,7 @@ export async function scheduleActivityNotification(
 
     return notificationId;
   } catch (error) {
-    console.error('Error scheduling notification:', error);
+    console.error("Error scheduling notification:", error);
     return null;
   }
 }
@@ -143,14 +147,14 @@ export async function scheduleActivityNotification(
  * Cancel a scheduled notification
  */
 export async function cancelActivityNotification(
-  notificationId: string
+  notificationId: string,
 ): Promise<void> {
   const Notifications = await getNotifications();
   if (!Notifications) return;
   try {
     await Notifications.cancelScheduledNotificationAsync(notificationId);
   } catch (error) {
-    console.error('Error canceling notification:', error);
+    console.error("Error canceling notification:", error);
   }
 }
 
@@ -158,7 +162,7 @@ export async function cancelActivityNotification(
  * Schedule notifications for all upcoming activities
  */
 export async function scheduleAllUpcomingNotifications(
-  scheduledActivities: ScheduledActivityDoc[]
+  scheduledActivities: ScheduledActivityDoc[],
 ): Promise<void> {
   const Notifications = await getNotifications();
   if (!Notifications) return;
@@ -166,9 +170,11 @@ export async function scheduleAllUpcomingNotifications(
     const now = new Date();
     for (const activity of scheduledActivities) {
       const activityDateTime = new Date(
-        `${activity.activityDate}T${activity.activityTime}`
+        `${activity.activityDate}T${activity.activityTime}`,
       );
-      const oneHourBefore = new Date(activityDateTime.getTime() - 60 * 60 * 1000);
+      const oneHourBefore = new Date(
+        activityDateTime.getTime() - 60 * 60 * 1000,
+      );
       if (
         activityDateTime > now &&
         oneHourBefore > now &&
@@ -178,33 +184,40 @@ export async function scheduleAllUpcomingNotifications(
       }
     }
   } catch (error) {
-    console.error('Error scheduling all notifications:', error);
+    console.error("Error scheduling all notifications:", error);
   }
 }
 
 /**
- * Check and send notifications for activities that need them
+ * Check and send notifications for activities that need them (current user only)
  */
-export async function checkAndSendNotifications(): Promise<void> {
+export async function checkAndSendNotifications(userId: string): Promise<void> {
   const Notifications = await getNotifications();
-  if (!Notifications) return;
+  if (!Notifications || !userId) return;
   try {
-    const { getActivitiesNeedingNotification } = await import('./scheduledActivities');
-    const activities = await getActivitiesNeedingNotification();
+    const { getActivitiesNeedingNotification } =
+      await import("./scheduledActivities");
+    const activities = await getActivitiesNeedingNotification(userId);
 
     for (const activity of activities) {
       const activityDateTime = new Date(
-        `${activity.activityDate}T${activity.activityTime}`
+        `${activity.activityDate}T${activity.activityTime}`,
       );
-      const oneHourBefore = new Date(activityDateTime.getTime() - 60 * 60 * 1000);
+      const oneHourBefore = new Date(
+        activityDateTime.getTime() - 60 * 60 * 1000,
+      );
       const now = new Date();
 
-      if (now >= oneHourBefore && now < activityDateTime && !activity.notificationSent) {
+      if (
+        now >= oneHourBefore &&
+        now < activityDateTime &&
+        !activity.notificationSent
+      ) {
         const activityName = getActivityName(activity.activityName);
 
         await Notifications.scheduleNotificationAsync({
           content: {
-            title: 'Activity Reminder',
+            title: "Activity Reminder",
             body: `Your ${activityName} activity with ${activity.partnerName} starts in 1 hour!`,
             data: {
               scheduledActivityId: activity.id,
@@ -218,7 +231,7 @@ export async function checkAndSendNotifications(): Promise<void> {
         const scheduledActivityRef = doc(
           db,
           SCHEDULED_ACTIVITIES_COLLECTION,
-          activity.id
+          activity.id,
         );
         await updateDoc(scheduledActivityRef, {
           notificationSent: true,
@@ -226,6 +239,6 @@ export async function checkAndSendNotifications(): Promise<void> {
       }
     }
   } catch (error) {
-    console.error('Error checking and sending notifications:', error);
+    console.error("Error checking and sending notifications:", error);
   }
 }

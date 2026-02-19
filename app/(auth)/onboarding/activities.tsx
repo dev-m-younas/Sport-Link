@@ -58,7 +58,7 @@ export default function ActivitiesScreen() {
               <MaterialCommunityIcons
                 name="soccer"
                 size={40}
-                color="#0a7ea4"
+                color="#00ADB5"
               />
             </View>
             <ThemedText type="title" style={styles.title}>
@@ -93,7 +93,7 @@ export default function ActivitiesScreen() {
                     <MaterialCommunityIcons
                       name={activity.icon as any}
                       size={32}
-                      color={isSelected ? '#fff' : '#0a7ea4'}
+                      color={isSelected ? '#fff' : '#00ADB5'}
                     />
                   </View>
                   <Text
@@ -109,7 +109,7 @@ export default function ActivitiesScreen() {
                       <MaterialCommunityIcons
                         name="check-circle"
                         size={24}
-                        color="#0a7ea4"
+                        color="#00ADB5"
                       />
                     </View>
                   )}
@@ -157,13 +157,13 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#E6F4FE',
+    backgroundColor: 'rgba(0,173,181,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
   },
   iconCircleDark: {
-    backgroundColor: '#1D3D47',
+    backgroundColor: 'rgba(0,173,181,0.2)',
   },
   title: {
     marginBottom: 8,
@@ -194,15 +194,15 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   activityCardDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: '#393E46',
   },
   activityCardSelected: {
-    backgroundColor: '#E6F4FE',
-    borderColor: '#0a7ea4',
+    backgroundColor: 'rgba(0,173,181,0.15)',
+    borderColor: '#00ADB5',
   },
   activityCardSelectedDark: {
-    backgroundColor: '#1D3D47',
-    borderColor: '#0a7ea4',
+    backgroundColor: 'rgba(0,173,181,0.2)',
+    borderColor: '#00ADB5',
   },
   iconContainer: {
     width: 64,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3C3E42',
   },
   iconContainerSelected: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: '#00ADB5',
   },
   activityName: {
     fontSize: 14,
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     color: '#ECEDEE',
   },
   activityNameSelected: {
-    color: '#0a7ea4',
+    color: '#00ADB5',
   },
   checkmark: {
     position: 'absolute',

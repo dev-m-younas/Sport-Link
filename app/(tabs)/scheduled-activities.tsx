@@ -1,29 +1,29 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { useFocusEffect } from "@react-navigation/native";
+import Constants from "expo-constants";
+import { Image } from "expo-image";
+import { router } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
-  View,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import Constants from 'expo-constants';
-import { useFocusEffect } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { Image } from 'expo-image';
+    ActivityIndicator,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { useThemeColors } from '@/hooks/use-theme-colors';
-import { useAuth } from '@/contexts/AuthContext';
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { ACTIVITIES, EXPERTISE_LEVELS } from "@/constants/activities";
+import { useAuth } from "@/contexts/AuthContext";
+import { useThemeColors } from "@/hooks/use-theme-colors";
 import {
-  getUserScheduledActivities,
-  type ScheduledActivityDoc,
-} from '@/lib/scheduledActivities';
-import { ACTIVITIES, EXPERTISE_LEVELS } from '@/constants/activities';
-import { showToast } from '@/lib/toast';
+    getUserScheduledActivities,
+    type ScheduledActivityDoc,
+} from "@/lib/scheduledActivities";
+import { showToast } from "@/lib/toast";
 
 function getActivityName(activityId: string): string {
   return ACTIVITIES.find((a) => a.id === activityId)?.name ?? activityId;
@@ -46,23 +46,25 @@ function ScheduledActivityCard({
 }) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const formatTime = (timeString: string) => {
     const time = new Date(timeString);
-    return time.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
+    return time.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
-  const activityDateTime = new Date(`${activity.activityDate}T${activity.activityTime}`);
+  const activityDateTime = new Date(
+    `${activity.activityDate}T${activity.activityTime}`,
+  );
   const now = new Date();
   const isUpcoming = activityDateTime > now;
   const isPast = activityDateTime < now;
@@ -71,15 +73,17 @@ function ScheduledActivityCard({
     <TouchableOpacity
       style={[styles.activityCard, { backgroundColor: colors.card }]}
       onPress={onPress}
-      activeOpacity={0.7}>
+      activeOpacity={0.7}
+    >
       <View style={styles.cardHeader}>
         <View style={[styles.iconWrap, { backgroundColor: colors.chipBg }]}>
           <MaterialCommunityIcons
             name={
-              ACTIVITIES.find((a) => a.id === activity.activityName)?.icon as any || 'run'
+              (ACTIVITIES.find((a) => a.id === activity.activityName)
+                ?.icon as any) || "run"
             }
             size={24}
-            color="#0a7ea4"
+            color="#00ADB5"
           />
         </View>
         <View style={styles.cardTitleBlock}>
@@ -92,28 +96,37 @@ function ScheduledActivityCard({
         </View>
         {isUpcoming && (
           <View style={styles.upcomingBadge}>
-            <MaterialCommunityIcons name="clock-outline" size={16} color="#0a7ea4" />
+            <MaterialCommunityIcons
+              name="clock-outline"
+              size={16}
+              color="#00ADB5"
+            />
           </View>
         )}
         {isPast && (
           <View style={styles.pastBadge}>
-            <MaterialCommunityIcons name="check-circle" size={16} color="#10B981" />
+            <MaterialCommunityIcons
+              name="check-circle"
+              size={16}
+              color="#10B981"
+            />
           </View>
         )}
       </View>
 
-        <View style={styles.cardRow}>
+      <View style={styles.cardRow}>
         <MaterialCommunityIcons
           name="calendar"
           size={16}
           color={colors.textSecondary}
         />
         <ThemedText style={styles.cardText}>
-          {formatDate(activity.activityDate)} at {formatTime(activity.activityTime)}
+          {formatDate(activity.activityDate)} at{" "}
+          {formatTime(activity.activityTime)}
         </ThemedText>
       </View>
 
-        <View style={styles.cardRow}>
+      <View style={styles.cardRow}>
         <MaterialCommunityIcons
           name="map-marker"
           size={16}
@@ -123,7 +136,9 @@ function ScheduledActivityCard({
       </View>
 
       {activity.partnerProfileImage && (
-        <View style={[styles.partnerSection, { borderTopColor: colors.border }]}>
+        <View
+          style={[styles.partnerSection, { borderTopColor: colors.border }]}
+        >
           <Image
             source={{ uri: activity.partnerProfileImage }}
             style={[styles.partnerAvatar, { borderColor: colors.tint }]}
@@ -141,7 +156,7 @@ function ScheduledActivityCard({
 export default function ScheduledActivitiesScreen() {
   const { user } = useAuth();
   const colors = useThemeColors();
-  const isDark = colors.background === '#151718';
+  const isDark = colors.background === "#222831";
   const insets = useSafeAreaInsets();
 
   const [activities, setActivities] = useState<ScheduledActivityDoc[]>([]);
@@ -159,8 +174,8 @@ export default function ScheduledActivitiesScreen() {
       const scheduled = await getUserScheduledActivities(user.uid);
       setActivities(scheduled);
     } catch (error: any) {
-      console.error('Error loading scheduled activities:', error);
-      showToast.error('Error', 'Failed to load scheduled activities');
+      console.error("Error loading scheduled activities:", error);
+      showToast.error("Error", "Failed to load scheduled activities");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -171,13 +186,15 @@ export default function ScheduledActivitiesScreen() {
     useCallback(() => {
       setLoading(true);
       loadActivities();
-      
+
       // Skip notifications in Expo Go - not supported there
-      if (Constants.appOwnership !== 'expo') {
-        const { checkAndSendNotifications } = require('@/lib/activityNotifications');
-        checkAndSendNotifications();
+      if (Constants.appOwnership !== "expo" && user?.uid) {
+        const {
+          checkAndSendNotifications,
+        } = require("@/lib/activityNotifications");
+        checkAndSendNotifications(user.uid);
       }
-    }, [loadActivities])
+    }, [loadActivities]),
   );
 
   const onRefresh = useCallback(() => {
@@ -187,7 +204,7 @@ export default function ScheduledActivitiesScreen() {
 
   const handleActivityPress = (activity: ScheduledActivityDoc) => {
     router.push({
-      pathname: '/(tabs)/activity-detail',
+      pathname: "/(tabs)/activity-detail",
       params: { id: activity.activityId },
     });
   };
@@ -204,8 +221,19 @@ export default function ScheduledActivitiesScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <View style={[styles.header, { paddingTop: Math.max(insets.top + 8, 24), borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+      <View
+        style={[
+          styles.header,
+          {
+            paddingTop: Math.max(insets.top + 8, 24),
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
           <MaterialCommunityIcons
             name="arrow-left"
             size={24}
@@ -221,12 +249,20 @@ export default function ScheduledActivitiesScreen() {
       {loading ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={colors.tint} />
-          <ThemedText style={styles.loadingText}>Loading activities...</ThemedText>
+          <ThemedText style={styles.loadingText}>
+            Loading activities...
+          </ThemedText>
         </View>
       ) : activities.length === 0 ? (
         <View style={styles.centered}>
-          <MaterialCommunityIcons name="calendar-clock" size={64} color={colors.icon} />
-          <ThemedText style={styles.emptyTitle}>No scheduled activities</ThemedText>
+          <MaterialCommunityIcons
+            name="calendar-clock"
+            size={64}
+            color={colors.icon}
+          />
+          <ThemedText style={styles.emptyTitle}>
+            No scheduled activities
+          </ThemedText>
           <ThemedText style={styles.emptySubtitle}>
             Activities you accept will appear here
           </ThemedText>
@@ -241,7 +277,8 @@ export default function ScheduledActivitiesScreen() {
               onRefresh={onRefresh}
               colors={[colors.tint]}
             />
-          }>
+          }
+        >
           {upcomingActivities.length > 0 && (
             <View style={styles.section}>
               <ThemedText style={styles.sectionTitle}>Upcoming</ThemedText>
@@ -282,9 +319,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 12,
     borderBottomWidth: 1,
@@ -294,15 +331,15 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   placeholder: {
     width: 32,
   },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 24,
   },
   loadingText: {
@@ -311,15 +348,15 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
     marginTop: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptySubtitle: {
     fontSize: 14,
     opacity: 0.8,
     marginTop: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   scrollView: {
     flex: 1,
@@ -333,7 +370,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 16,
   },
   activityCard: {
@@ -342,16 +379,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
   },
   iconWrap: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
   },
   cardTitleBlock: {
@@ -359,7 +396,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   cardMeta: {
     fontSize: 13,
@@ -370,21 +407,21 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#E6F4FE',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(0,173,181,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   pastBadge: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#D1FAE5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#D1FAE5",
+    alignItems: "center",
+    justifyContent: "center",
   },
   cardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginBottom: 6,
   },
@@ -393,8 +430,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   partnerSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginTop: 12,
     paddingTop: 12,

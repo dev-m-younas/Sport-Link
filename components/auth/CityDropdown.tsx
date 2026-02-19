@@ -74,7 +74,7 @@ export function CityDropdown({
         ]}
         onPress={() => setModalVisible(true)}
         android_ripple={isDark ? { color: 'rgba(255,255,255,0.08)' } : { color: 'rgba(0,0,0,0.06)' }}>
-        <View style={[styles.triggerIconWrap, { backgroundColor: isDark ? 'rgba(10,126,164,0.2)' : '#E6F4FE' }]}>
+        <View style={[styles.triggerIconWrap, { backgroundColor: isDark ? 'rgba(0,173,181,0.2)' : 'rgba(0,173,181,0.15)' }]}>
           <MaterialCommunityIcons name="city-variant-outline" size={20} color={tint} />
         </View>
         <Text
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.08)',
   },
   dropdownButtonDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: '#393E46',
     borderColor: 'rgba(255,255,255,0.08)',
   },
   dropdownButtonPressed: {
@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F6F7',
   },
   searchWrapDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: '#393E46',
   },
   searchInput: {
     flex: 1,
@@ -396,10 +396,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F6F7',
   },
   optionCardDark: {
-    backgroundColor: '#2C2E31',
+    backgroundColor: '#393E46',
   },
   optionCardSelectedLight: {
-    backgroundColor: '#E6F4FE',
+    backgroundColor: 'rgba(0,173,181,0.15)',
   },
   optionCardSelectedDark: {
     backgroundColor: 'rgba(10,126,164,0.15)',

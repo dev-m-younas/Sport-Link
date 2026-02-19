@@ -127,7 +127,7 @@ function NotificationItem({
 export default function NotificationsScreen() {
   const { user } = useAuth();
   const colors = useThemeColors();
-  const isDark = colors.background === '#151718';
+  const isDark = colors.background === '#222831';
   const insets = useSafeAreaInsets();
 
   const [notifications, setNotifications] = useState<NotificationDoc[]>([]);

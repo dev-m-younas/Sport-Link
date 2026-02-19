@@ -63,17 +63,17 @@ function ActivityCard({
       <ThemedView
         style={[
           styles.card,
-          { backgroundColor: isDark ? '#2C2E31' : '#F1F3F4' },
+          { backgroundColor: isDark ? '#393E46' : '#EEEEEE' },
         ]}>
         <View style={styles.cardHeader}>
-          <View style={[styles.iconWrap, { backgroundColor: isDark ? '#1D3D47' : '#E6F4FE' }]}>
+          <View style={[styles.iconWrap, { backgroundColor: isDark ? 'rgba(0,173,181,0.2)' : 'rgba(0,173,181,0.15)' }]}>
             <MaterialCommunityIcons
               name={
                 ACTIVITIES.find((a) => a.id === item.activity)?.icon as any ||
                 'run'
               }
               size={24}
-              color="#0a7ea4"
+              color="#00ADB5"
             />
           </View>
           <View style={styles.cardTitleBlock}>
@@ -125,7 +125,7 @@ export default function HomeScreen() {
   const [locationDenied, setLocationDenied] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const colors = useThemeColors();
-  const isDark = colors.background === '#151718';
+  const isDark = colors.background === '#222831';
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#0a7ea4',
+    borderColor: '#00ADB5',
   },
   centerTitle: {
     flex: 1,

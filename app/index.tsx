@@ -15,7 +15,7 @@ export default function Index() {
           style={styles.logo}
           contentFit="contain"
         />
-        <ActivityIndicator size="large" color="#0a7ea4" style={styles.spinner} />
+        <ActivityIndicator size="large" color="#00ADB5" style={styles.spinner} />
       </ThemedView>
     );
   }

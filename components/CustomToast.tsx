@@ -35,13 +35,13 @@ const toastConfig = {
   info: (props: any) => (
     <InfoToast
       {...props}
-      style={[styles.toast, styles.toastLight, { borderLeftColor: '#0a7ea4' }]}
+      style={[styles.toast, styles.toastLight, { borderLeftColor: '#00ADB5' }]}
       contentContainerStyle={styles.contentContainer}
       text1Style={[styles.text1, styles.text1Light]}
       text2Style={[styles.text2, styles.text2Light]}
       renderLeadingIcon={() => (
-        <View style={[styles.iconContainer, { backgroundColor: '#0a7ea420' }]}>
-          <MaterialCommunityIcons name="information" size={24} color="#0a7ea4" />
+        <View style={[styles.iconContainer, { backgroundColor: '#00ADB520' }]}>
+          <MaterialCommunityIcons name="information" size={24} color="#00ADB5" />
         </View>
       )}
     />

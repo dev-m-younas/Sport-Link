@@ -80,7 +80,7 @@ export default function ActivityDetailScreen() {
   const params = useLocalSearchParams();
   const activityId = params.id as string;
   const colors = useThemeColors();
-  const isDark = colors.background === '#151718';
+  const isDark = colors.background === '#222831';
   const insets = useSafeAreaInsets();
   
   const [activity, setActivity] = useState<ActivityDoc | null>(null);
@@ -178,7 +178,7 @@ export default function ActivityDetailScreen() {
     return (
       <ThemedView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0a7ea4" />
+          <ActivityIndicator size="large" color="#00ADB5" />
           <ThemedText style={styles.loadingText}>Loading activity...</ThemedText>
         </View>
       </ThemedView>
@@ -234,7 +234,7 @@ export default function ActivityDetailScreen() {
                 ACTIVITIES.find((a) => a.id === activity.activity)?.icon as any || 'run'
               }
               size={48}
-              color="#0a7ea4"
+              color="#00ADB5"
             />
           </View>
           <ThemedText type="title" style={styles.activityTitle}>
@@ -260,7 +260,7 @@ export default function ActivityDetailScreen() {
             <MaterialCommunityIcons
               name="calendar"
               size={20}
-              color="#0a7ea4"
+              color="#00ADB5"
             />
             <View style={styles.detailContent}>
               <ThemedText style={styles.detailLabel}>Date & Time</ThemedText>
@@ -275,7 +275,7 @@ export default function ActivityDetailScreen() {
             <MaterialCommunityIcons
               name="map-marker"
               size={20}
-              color="#0a7ea4"
+              color="#00ADB5"
             />
             <View style={styles.detailContent}>
               <ThemedText style={styles.detailLabel}>Location</ThemedText>
@@ -298,7 +298,7 @@ export default function ActivityDetailScreen() {
                 <MaterialCommunityIcons
                   name="account-group"
                   size={20}
-                  color="#0a7ea4"
+                  color="#00ADB5"
                 />
                 <View style={styles.detailContent}>
                   <ThemedText style={styles.detailLabel}>Players</ThemedText>
@@ -315,7 +315,7 @@ export default function ActivityDetailScreen() {
             <MaterialCommunityIcons
               name="account"
               size={20}
-              color="#0a7ea4"
+              color="#00ADB5"
             />
             <View style={styles.detailContent}>
               <ThemedText style={styles.detailLabel}>Created By</ThemedText>

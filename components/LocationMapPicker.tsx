@@ -209,14 +209,14 @@ export function LocationMapPicker({
           <View style={styles.mapContainer}>
             {loading && !selectedLocation ? (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#0a7ea4" />
+                <ActivityIndicator size="large" color="#00ADB5" />
                 <ThemedText style={styles.loadingText}>
                   {showMap ? "Loading map..." : "Getting location..."}
                 </ThemedText>
               </View>
             ) : !showMap ? (
               <View style={styles.mapPlaceholder}>
-                <MaterialCommunityIcons name="map-marker" size={64} color="#0a7ea4" />
+                <MaterialCommunityIcons name="map-marker" size={64} color="#00ADB5" />
                 <ThemedText style={styles.mapPlaceholderText}>
                   Use current location below
                 </ThemedText>
@@ -285,7 +285,7 @@ export function LocationMapPicker({
               onPress={loadCurrentLocation}
               disabled={loading}
             >
-              <MaterialCommunityIcons name="crosshairs-gps" size={20} color="#0a7ea4" />
+              <MaterialCommunityIcons name="crosshairs-gps" size={20} color="#00ADB5" />
               <ThemedText style={styles.currentLocationText}>
                 Use Current Location
               </ThemedText>
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   coordinatesText: {
     fontSize: 12,
     fontFamily: "monospace",
-    color: "#0a7ea4",
+    color: "#00ADB5",
   },
   addressText: {
     fontSize: 12,
@@ -425,17 +425,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   currentLocationButton: {
-    backgroundColor: "#E6F4FE",
+    backgroundColor: "rgba(0,173,181,0.15)",
     borderWidth: 1,
-    borderColor: "#0a7ea4",
+    borderColor: "#00ADB5",
   },
   currentLocationText: {
-    color: "#0a7ea4",
+    color: "#00ADB5",
     fontSize: 16,
     fontWeight: "600",
   },
   confirmButton: {
-    backgroundColor: "#0a7ea4",
+    backgroundColor: "#00ADB5",
   },
   confirmButtonDisabled: {
     backgroundColor: "#9BA1A6",

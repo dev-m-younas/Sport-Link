@@ -45,7 +45,7 @@ export default function WelcomeScreen2() {
             <MaterialCommunityIcons
               name="account-group"
               size={120}
-              color="#0a7ea4"
+              color="#00ADB5"
             />
           </View>
 
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   },
   skipText: {
     fontSize: 16,
-    color: '#0a7ea4',
+    color: '#00ADB5',
     fontWeight: '600',
   },
   content: {
@@ -114,13 +114,13 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: '#E6F4FE',
+    backgroundColor: 'rgba(0,173,181,0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 48,
   },
   iconContainerDark: {
-    backgroundColor: '#1D3D47',
+    backgroundColor: 'rgba(0,173,181,0.2)',
   },
   title: {
     fontSize: 32,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#0a7ea4',
+    backgroundColor: '#00ADB5',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
@@ -157,6 +157,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   nextButtonDark: {
-    backgroundColor: '#0a7ea4',
+    backgroundColor: '#00ADB5',
   },
 });

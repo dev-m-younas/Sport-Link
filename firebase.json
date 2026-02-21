@@ -1,9 +1,7 @@
 {
-  "firestore": [
-    {
-      "database": "sport-link",
-      "rules": "firestore.rules",
-      "indexes": "firestore.indexes.json"
-    }
-  ]
+  "firestore": {
+    "database": "sport-link",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  }
 }

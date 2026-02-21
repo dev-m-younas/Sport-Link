@@ -21,6 +21,8 @@ function AppContent() {
     if (Constants.appOwnership === 'expo') return;
     const { requestNotificationPermissions } = require('@/lib/activityNotifications');
     requestNotificationPermissions().catch(() => {});
+    const { setupNotificationHandlers } = require('@/lib/notificationHandler');
+    return setupNotificationHandlers();
   }, []);
 
   return (

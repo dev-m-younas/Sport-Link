@@ -1,0 +1,34 @@
+{
+  "project_info": {
+    "project_number": "54785247116",
+    "project_id": "sportlink-371f9",
+    "storage_bucket": "sportlink-371f9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:54785247116:android:279d5f2315699517a9f8a9",
+        "android_client_info": {
+          "package_name": "com.sportlink.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLQbN4c8T-RnROasq_5S72n4cnxOe7y-o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "54785247116-7i9mq1164fns78d2qa2trvpkst55ubld.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

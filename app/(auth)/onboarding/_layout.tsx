@@ -1,6 +1,18 @@
 import { Stack } from 'expo-router';
+import { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function OnboardingLayout() {
+  const { user } = useAuth();
+
+  // Request notification permission & save push token to users collection (for FCM/Expo push)
+  useEffect(() => {
+    if (!user?.uid) return;
+    import('@/lib/chatPushNotifications').then(({ savePushToken }) => {
+      savePushToken(user.uid).catch(() => {});
+    });
+  }, [user?.uid]);
+
   return (
     <Stack
       screenOptions={{

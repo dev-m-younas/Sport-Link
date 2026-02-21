@@ -8,6 +8,7 @@ import {
   where,
   updateDoc,
   serverTimestamp,
+  onSnapshot,
   type Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -99,6 +100,64 @@ export async function createJoinRequest(
     console.error('Error creating join request:', error);
     throw error;
   }
+}
+
+/** Convert doc to NotificationDoc */
+function docToNotification(docSnap: { id: string; data: () => Record<string, unknown> }): NotificationDoc {
+  const d = docSnap.data();
+  const createdAt = d.createdAt as Timestamp | null | undefined;
+  const updatedAt = d.updatedAt as Timestamp | null | undefined;
+  return {
+    id: docSnap.id,
+    recipientUid: (d.recipientUid as string) ?? '',
+    senderUid: (d.senderUid as string) ?? '',
+    senderName: (d.senderName as string) ?? 'User',
+    senderProfileImage: d.senderProfileImage as string | undefined,
+    activityId: (d.activityId as string) ?? '',
+    activityName: (d.activityName as string) ?? '',
+    type: (d.type as NotificationType) ?? 'join_request',
+    status: (d.status as NotificationStatus) ?? 'pending',
+    createdAt: createdAt ? createdAt.toDate().toISOString() : '',
+    updatedAt: updatedAt ? updatedAt.toDate().toISOString() : '',
+  };
+}
+
+/**
+ * Subscribe to user's notifications in real-time
+ */
+export function subscribeToUserNotifications(
+  userId: string,
+  callback: (notifications: NotificationDoc[]) => void
+): () => void {
+  const q = query(
+    collection(db, NOTIFICATIONS_COLLECTION),
+    where('recipientUid', '==', userId)
+  );
+  return onSnapshot(q, (snap) => {
+    const list = snap.docs.map((d) => docToNotification(d));
+    list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    callback(list);
+  }, (err) => {
+    console.warn('Notifications subscription error:', err);
+    callback([]);
+  });
+}
+
+/**
+ * Subscribe to pending notifications count (for navbar badge)
+ */
+export function subscribeToPendingNotificationsCount(
+  userId: string,
+  callback: (count: number) => void
+): () => void {
+  const q = query(
+    collection(db, NOTIFICATIONS_COLLECTION),
+    where('recipientUid', '==', userId),
+    where('status', '==', 'pending')
+  );
+  return onSnapshot(q, (snap) => {
+    callback(snap.size);
+  }, () => callback(0));
 }
 
 /**

@@ -18,6 +18,7 @@ export interface UserProfile {
   activities: string[]; // Selected sports/activities
   expertiseLevel: ExpertiseLevel;
   profileImage?: string; // Profile image URL
+  pushToken?: string; // Expo/FCM push token for notifications
   onboardingCompleted: boolean;
   latitude?: number; // User's current location latitude
   longitude?: number; // User's current location longitude
@@ -44,6 +45,9 @@ export async function saveUserProfile(
   }
   // If both are undefined/null/empty, profileImage will remain undefined and won't be included in the document
   
+  // pushToken for notifications: from profileData (onboarding) or preserve existing
+  const pushToken = profileData.pushToken ?? existingData.pushToken;
+
   const profile: any = {
     uid: user.uid,
     name: profileData.name || existingData.name || user.displayName || "",
@@ -79,6 +83,10 @@ export async function saveUserProfile(
     profile.longitude = profileData.longitude;
   } else if (existingData.longitude !== undefined && existingData.longitude !== null) {
     profile.longitude = existingData.longitude;
+  }
+
+  if (pushToken) {
+    profile.pushToken = pushToken;
   }
 
   await setDoc(userRef, profile, { merge: true });

@@ -17,6 +17,7 @@
     },
     "android": {
       "package": "com.sportlink.app",
+      "googleServicesFile": "./google-services.json",
       "config": {
         "googleMaps": {
           "apiKey": "${process.env.GOOGLE_MAPS_API_KEY}"
@@ -34,7 +35,8 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -67,7 +69,14 @@
           "locationAlwaysAndWhenInUsePermission": "Allow Sport Link to use your location to set activity locations."
         }
       ],
-      "expo-video"
+      "expo-video",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#00ADB5"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

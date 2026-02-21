@@ -10,6 +10,7 @@ import {
   Platform,
   Keyboard,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -114,13 +115,15 @@ export default function ChatDetailScreen() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    // Mark messages as read when screen is focused
-    if (user && otherUserId && messages.length > 0) {
-      const conversationId = getConversationId(user.uid, otherUserId);
-      markMessagesAsRead(conversationId, user.uid);
-    }
-  }, [user, otherUserId, messages]);
+  // Mark as read ONLY when user opens this chat (focus), not when new messages arrive
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user && otherUserId) {
+        const conversationId = getConversationId(user.uid, otherUserId);
+        markMessagesAsRead(conversationId, user.uid);
+      }
+    }, [user?.uid, otherUserId])
+  );
 
   const loadOtherUserProfile = async () => {
     try {

@@ -11,8 +11,8 @@ import {
     signInWithEmailAndPassword,
     type UserCredential,
 } from "firebase/auth";
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { Platform } from "react-native";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { AppState, AppStateStatus, Platform } from "react-native";
 import { checkOnboardingStatus } from "@/lib/userProfile";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (user) {
         // Set loading to false immediately for navigation
         setLoading(false);
-        // Save push token for chat notifications (non-blocking)
+        // Save push token for chat & message notifications (non-blocking)
         import('@/lib/chatPushNotifications').then(({ savePushToken }) => {
           savePushToken(user.uid).catch(() => {});
         });
@@ -84,6 +84,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     return unsubscribe;
   }, []);
+
+  // Refresh push token when app comes to foreground (for notifications)
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (nextState === 'active' && user?.uid) {
+        import('@/lib/chatPushNotifications').then(({ savePushToken }) => {
+          savePushToken(user.uid).catch(() => {});
+        });
+      }
+    });
+    return () => subscription.remove();
+  }, [user?.uid]);
 
   useEffect(() => {
     if (response?.type === "success") {

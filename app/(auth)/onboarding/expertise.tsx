@@ -54,7 +54,11 @@ export default function ExpertiseScreen() {
     setLoading(true);
     try {
       const activities = JSON.parse((params.activities as string) || '[]');
-      
+
+      // Fetch push token first so it's saved with profile (guarantees token in user doc)
+      const { getPushToken } = await import('@/lib/chatPushNotifications');
+      const pushToken = await getPushToken();
+
       await saveUserProfile(user, {
         name: params.name as string,
         email: params.email as string,
@@ -66,16 +70,12 @@ export default function ExpertiseScreen() {
         city: params.city as string,
         activities,
         expertiseLevel: selectedLevel,
-        // Only include profileImage if it exists and is not empty
         ...(params.profileImage && (params.profileImage as string).trim() !== ''
           ? { profileImage: params.profileImage as string }
           : {}),
+        ...(pushToken ? { pushToken } : {}),
         onboardingCompleted: true,
       });
-
-      // Save push token to DB (for join requests, chat notifications)
-      const { savePushToken } = await import('@/lib/chatPushNotifications');
-      savePushToken(user.uid).catch(() => {});
 
       // Refresh onboarding status
       await refreshOnboardingStatus();

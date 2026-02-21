@@ -18,6 +18,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useAuth } from '@/contexts/AuthContext';
 import {
+  subscribeToUserNotifications,
   getUserNotifications,
   acceptJoinRequest,
   declineJoinRequest,
@@ -136,12 +137,7 @@ export default function NotificationsScreen() {
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const loadNotifications = useCallback(async () => {
-    if (!user?.uid) {
-      setLoading(false);
-      setRefreshing(false);
-      return;
-    }
-
+    if (!user?.uid) return;
     try {
       const notifs = await getUserNotifications(user.uid);
       setNotifications(notifs);
@@ -149,16 +145,23 @@ export default function NotificationsScreen() {
       console.error('Error loading notifications:', error);
       showToast.error('Error', 'Failed to load notifications');
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
-  }, [user]);
+  }, [user?.uid]);
 
   useFocusEffect(
     useCallback(() => {
+      if (!user?.uid) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
-      loadNotifications();
-    }, [loadNotifications])
+      const unsub = subscribeToUserNotifications(user.uid, (notifs) => {
+        setNotifications(notifs);
+        setLoading(false);
+      });
+      return () => unsub();
+    }, [user?.uid])
   );
 
   const onRefresh = useCallback(() => {

@@ -117,7 +117,7 @@ export async function sendMessage(
 
     // Send push notification to receiver (non-blocking)
     import('./chatPushNotifications').then(({ sendChatPushNotification }) => {
-      sendChatPushNotification(receiverUid, senderName, text.trim()).catch(() => {});
+      sendChatPushNotification(receiverUid, sender.uid, senderName, text.trim()).catch(() => {});
     });
 
     return messageRef.id;
@@ -125,6 +125,124 @@ export async function sendMessage(
     console.error('Error sending message:', error);
     throw error;
   }
+}
+
+/**
+ * Subscribe to total unread chat count (for tab bar badge)
+ */
+export function subscribeToUnreadChatCount(
+  userId: string,
+  callback: (totalUnread: number) => void
+): () => void {
+  let unreadFromQ1 = 0;
+  let unreadFromQ2 = 0;
+  const updateTotal = () => callback(unreadFromQ1 + unreadFromQ2);
+
+  const q1 = query(
+    collection(db, CONVERSATIONS_COLLECTION),
+    where('userId1', '==', userId)
+  );
+  const q2 = query(
+    collection(db, CONVERSATIONS_COLLECTION),
+    where('userId2', '==', userId)
+  );
+
+  const unsub1 = onSnapshot(q1, (snap) => {
+    unreadFromQ1 = snap.docs.reduce((sum, d) => {
+      const data = d.data();
+      const lastSender = data.lastMessageSenderUid as string;
+      const unread = (data.unreadCount as number) ?? 0;
+      if (lastSender === userId) return sum;
+      return sum + unread;
+    }, 0);
+    updateTotal();
+  }, (err) => {
+    console.warn('Unread count subscription error (q1):', err?.message);
+  });
+
+  const unsub2 = onSnapshot(q2, (snap) => {
+    unreadFromQ2 = snap.docs.reduce((sum, d) => {
+      const data = d.data();
+      const lastSender = data.lastMessageSenderUid as string;
+      const unread = (data.unreadCount as number) ?? 0;
+      if (lastSender === userId) return sum;
+      return sum + unread;
+    }, 0);
+    updateTotal();
+  }, (err) => {
+    console.warn('Unread count subscription error (q2):', err?.message);
+  });
+
+  return () => {
+    unsub1();
+    unsub2();
+  };
+}
+
+/** Convert snapshot doc to ConversationDoc */
+function docToConversation(docSnap: { id: string; data: () => Record<string, unknown> }): ConversationDoc {
+  const d = docSnap.data();
+  const updatedAt = d.updatedAt as Timestamp | null;
+  const lastMessageTime = d.lastMessageTime as Timestamp | null;
+  return {
+    id: docSnap.id,
+    userId1: d.userId1 ?? '',
+    userId2: d.userId2 ?? '',
+    lastMessage: d.lastMessage ?? '',
+    lastMessageTime: lastMessageTime ? lastMessageTime.toDate().toISOString() : undefined,
+    lastMessageSenderUid: d.lastMessageSenderUid ?? undefined,
+    unreadCount: d.unreadCount ?? 0,
+    updatedAt: updatedAt ? updatedAt.toDate().toISOString() : '',
+  };
+}
+
+/**
+ * Subscribe to user's conversations in real-time
+ */
+export function subscribeToUserConversations(
+  userId: string,
+  callback: (conversations: ConversationDoc[]) => void
+): () => void {
+  const q1 = query(
+    collection(db, CONVERSATIONS_COLLECTION),
+    where('userId1', '==', userId)
+  );
+  const q2 = query(
+    collection(db, CONVERSATIONS_COLLECTION),
+    where('userId2', '==', userId)
+  );
+
+  const conversationsMap = new Map<string, ConversationDoc>();
+
+  const mergeAndEmit = () => {
+    const list = Array.from(conversationsMap.values());
+    list.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    callback(list);
+  };
+
+  const onError = (err: unknown) => {
+    console.warn('Conversations subscription error:', err);
+    callback([]);
+  };
+
+  const unsub1 = onSnapshot(q1, (snap) => {
+    snap.docs.forEach((d) => {
+      conversationsMap.set(d.id, docToConversation(d));
+    });
+    mergeAndEmit();
+  }, onError);
+
+  const unsub2 = onSnapshot(q2, (snap) => {
+    snap.docs.forEach((d) => {
+      conversationsMap.set(d.id, docToConversation(d));
+    });
+    mergeAndEmit();
+  }, onError);
+
+  return () => {
+    unsub1();
+    unsub2();
+  };
 }
 
 /**

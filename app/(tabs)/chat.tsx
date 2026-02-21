@@ -17,7 +17,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserConversations, type ConversationDoc } from '@/lib/chat';
+import { subscribeToUserConversations, getUserConversations, type ConversationDoc } from '@/lib/chat';
 import { getUserProfile } from '@/lib/userProfile';
 import { showToast } from '@/lib/toast';
 
@@ -81,6 +81,7 @@ function ConversationItem({
   };
 
   const isFromMe = conversation.lastMessageSenderUid === currentUserId;
+  const myUnreadCount = !isFromMe ? (conversation.unreadCount ?? 0) : 0;
   const displayName = otherUserProfile?.name || 'User';
   const displayImage = otherUserProfile?.profileImage;
 
@@ -121,10 +122,10 @@ function ConversationItem({
               numberOfLines={1}>
               {isFromMe ? 'You: ' : ''}{conversation.lastMessage || 'No messages yet'}
             </ThemedText>
-            {conversation.unreadCount > 0 && (
+            {myUnreadCount > 0 && (
               <View style={[styles.unreadBadge, { backgroundColor: colors.tint }]}>
                 <ThemedText style={styles.unreadText}>
-                  {conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}
+                  {myUnreadCount > 9 ? '9+' : myUnreadCount}
                 </ThemedText>
               </View>
             )}
@@ -145,36 +146,33 @@ export default function ChatScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadConversations = useCallback(async () => {
-    if (!user?.uid) {
-      setLoading(false);
-      setRefreshing(false);
-      return;
-    }
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.uid) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      const unsub = subscribeToUserConversations(user.uid, (convos) => {
+        setConversations(convos);
+        setLoading(false);
+      });
+      return () => unsub();
+    }, [user?.uid])
+  );
 
+  const onRefresh = useCallback(async () => {
+    if (!user?.uid) return;
+    setRefreshing(true);
     try {
       const convos = await getUserConversations(user.uid);
       setConversations(convos);
-    } catch (error: any) {
-      console.error('Error loading conversations:', error);
-      showToast.error('Error', 'Failed to load conversations');
+    } catch {
+      // Subscription will keep data fresh
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
-  }, [user]);
-
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      loadConversations();
-    }, [loadConversations])
-  );
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    loadConversations();
-  }, [loadConversations]);
+  }, [user?.uid]);
 
   const handleConversationPress = (conversation: ConversationDoc) => {
     const otherUserId = conversation.userId1 === user?.uid 

@@ -21,7 +21,7 @@ import { LocationMapPicker } from "@/components/LocationMapPicker";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Dropdown } from "@/components/ui/Dropdown";
-import { ACTIVITIES, EXPERTISE_LEVELS, getActivityConfig } from "@/constants/activities";
+import { ACTIVITIES, EXPERTISE_LEVELS, getActivityConfig, getRequiredMembersRange } from "@/constants/activities";
 import { useAuth } from "@/contexts/AuthContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { saveActivity } from "@/lib/activities";
@@ -56,6 +56,7 @@ export default function CreateActivityScreen() {
   const [videoUri, setVideoUri] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [playersPerTeam, setPlayersPerTeam] = useState<number>(5);
+  const [requiredMembers, setRequiredMembers] = useState<number>(2);
   const [isLoading, setIsLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const notesInputRef = useRef<TextInput>(null);
@@ -151,6 +152,9 @@ export default function CreateActivityScreen() {
     }
 
     setIsLoading(true);
+    // Allow loading UI to render before blocking
+    await new Promise((r) => setTimeout(r, 50));
+
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
@@ -162,9 +166,11 @@ export default function CreateActivityScreen() {
         return;
       }
 
-      // Get creator's current location and profile name
-      const { coords } = await Location.getCurrentPositionAsync({});
-      const profile = await getUserProfile(user.uid);
+      // Run location + profile in parallel for faster UX
+      const [{ coords }, profile] = await Promise.all([
+        Location.getCurrentPositionAsync({}),
+        getUserProfile(user.uid),
+      ]);
 
       const config = getActivityConfig(selectedActivity);
       const activityType = config?.type ?? "open";
@@ -172,6 +178,7 @@ export default function CreateActivityScreen() {
       const minPlayersPerTeam = config?.type === "team" ? (playersPerTeam || config.minPlayersPerTeam) : undefined;
 
       await saveActivity(user, {
+        requiredMembers,
         activity: selectedActivity,
         creatorName: profile?.name || undefined,
         activityType,
@@ -206,9 +213,7 @@ export default function CreateActivityScreen() {
         "Your activity has been created and will show to users within 15km.",
       );
 
-      setTimeout(() => {
-        router.back();
-      }, 1500);
+      setTimeout(() => router.back(), 600);
     } catch (error: any) {
       console.error("Create activity error:", error);
       const errorMessage =
@@ -261,10 +266,56 @@ export default function CreateActivityScreen() {
               label="Select Activity"
               options={ACTIVITY_OPTIONS}
               selectedValue={selectedActivity}
-              onSelect={setSelectedActivity}
+              onSelect={(v) => {
+                setSelectedActivity(v);
+                if (v) {
+                  const range = getRequiredMembersRange(v);
+                  setRequiredMembers(range.min);
+                }
+              }}
               placeholder="e.g. Football, Cricket, Tennis"
               triggerIcon="soccer"
             />
+
+            {/* Required Members - kitne members chahiye */}
+            {selectedActivity && (
+              <View style={styles.inputContainer}>
+                <ThemedText style={styles.label}>Required Members</ThemedText>
+                <ThemedText style={styles.hintText}>
+                  Kitne members aapko chahiye? (e.g. Cricket: 4, Padel: 1 ya 2)
+                </ThemedText>
+                <View style={styles.playersRow}>
+                  {(() => {
+                    const range = getRequiredMembersRange(selectedActivity);
+                    const options = [];
+                    for (let n = range.min; n <= range.max; n++) {
+                      options.push(n);
+                    }
+                    return options.map((n) => (
+                      <TouchableOpacity
+                        key={n}
+                        style={[
+                          styles.playerChip,
+                          requiredMembers === n && styles.playerChipActive,
+                          isDark && styles.playerChipDark,
+                          requiredMembers === n && isDark && styles.playerChipActiveDark,
+                        ]}
+                        onPress={() => setRequiredMembers(n)}
+                      >
+                        <ThemedText
+                          style={[
+                            styles.playerChipText,
+                            requiredMembers === n && styles.playerChipTextActive,
+                          ]}
+                        >
+                          {n}
+                        </ThemedText>
+                      </TouchableOpacity>
+                    ));
+                  })()}
+                </View>
+              </View>
+            )}
 
             {/* Level Selection - same as onboarding (Beginner, Intermediate, Pro) */}
             <Dropdown
@@ -316,13 +367,6 @@ export default function CreateActivityScreen() {
                 <ThemedText style={styles.infoBannerText}>Max 4 players</ThemedText>
               </View>
             )}
-            {selectedActivity && getActivityConfig(selectedActivity)?.type === "open" && (
-              <View style={[styles.infoBanner, isDark && styles.infoBannerDark]}>
-                <MaterialCommunityIcons name="run" size={20} color="#00ADB5" />
-                <ThemedText style={styles.infoBannerText}>Open - jitne bhi aayein, group ban jayega</ThemedText>
-              </View>
-            )}
-
             {/* Date Selection */}
             <View style={styles.inputContainer}>
               <ThemedText style={styles.label}>Select Date</ThemedText>
@@ -539,6 +583,7 @@ export default function CreateActivityScreen() {
             {/* Submit Button */}
             <AuthButton
               title="Create Activity"
+              loadingTitle="Creating activity..."
               onPress={handleSubmit}
               loading={isLoading}
               style={styles.submitButton}

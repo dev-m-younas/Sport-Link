@@ -43,8 +43,90 @@ export interface CreateScheduledActivityInput {
   user2ProfileImage?: string;
 }
 
+export interface ParticipantInfo {
+  userId: string;
+  userName: string;
+  userProfileImage?: string;
+}
+
 /**
- * Create scheduled activities for both users when join request is accepted
+ * Create scheduled activities for ALL participants when required members join
+ * Jab required members activity join kar lein, sab ko profile > schedule main dikhega
+ */
+export async function createScheduledActivityForAllParticipants(
+  activityId: string,
+  creatorUid: string,
+  creatorName: string,
+  creatorProfileImage: string | undefined,
+  participants: ParticipantInfo[],
+): Promise<void> {
+  try {
+    const activity = await getActivityById(activityId);
+    if (!activity) throw new Error("Activity not found");
+
+    const allUsers: Array<{ uid: string; name: string; image?: string }> = [
+      { uid: creatorUid, name: creatorName, image: creatorProfileImage },
+      ...participants.map((p) => ({
+        uid: p.userId,
+        name: p.userName,
+        image: p.userProfileImage,
+      })),
+    ];
+
+    const { scheduleActivityNotification } =
+      await import("./activityNotifications");
+
+    for (const user of allUsers) {
+      const otherUsers = allUsers.filter((u) => u.uid !== user.uid);
+      const partnerName = otherUsers.map((u) => u.name).join(", ");
+      const firstOther = otherUsers[0];
+
+      const existingQ = query(
+        collection(db, SCHEDULED_ACTIVITIES_COLLECTION),
+        where("activityId", "==", activityId),
+        where("userId", "==", user.uid),
+      );
+      const existingSnap = await getDocs(existingQ);
+      if (!existingSnap.empty) continue;
+
+      const scheduledData: any = {
+        activityId,
+        userId: user.uid,
+        partnerUserId: firstOther?.uid ?? "",
+        partnerName,
+        activityName: activity.activity,
+        activityDate: activity.date,
+        activityTime: activity.time,
+        location: activity.location,
+        locationLat: activity.locationLat,
+        locationLong: activity.locationLong,
+        level: activity.level,
+        notes: activity.notes || undefined,
+        notificationSent: false,
+        createdAt: serverTimestamp(),
+      };
+      if (firstOther?.image) scheduledData.partnerProfileImage = firstOther.image;
+
+      const ref = await addDoc(
+        collection(db, SCHEDULED_ACTIVITIES_COLLECTION),
+        scheduledData,
+      );
+      const scheduled: ScheduledActivityDoc = {
+        id: ref.id,
+        ...scheduledData,
+        partnerProfileImage: firstOther?.image,
+        createdAt: new Date().toISOString(),
+      };
+      await scheduleActivityNotification(scheduled);
+    }
+  } catch (error: any) {
+    console.error("Error creating scheduled activities for all participants:", error);
+    throw error;
+  }
+}
+
+/**
+ * Create scheduled activities for both users when join request is accepted (legacy - used when requiredMembers=1)
  */
 export async function createScheduledActivityForBothUsers(
   input: CreateScheduledActivityInput,

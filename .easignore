@@ -1,0 +1,7 @@
+# Reduce EAS build upload size
+android/.gradle/
+android/app/build/
+android/app/.cxx/
+android/build/
+node_modules/.cache/
+.expo/

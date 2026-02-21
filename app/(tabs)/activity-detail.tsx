@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import { useEvent } from 'expo';
+import { useFocusEffect } from '@react-navigation/native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -16,8 +17,9 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColors } from '@/hooks/use-theme-colors';
-import { ACTIVITIES, EXPERTISE_LEVELS, getActivityConfig } from '@/constants/activities';
+import { ACTIVITIES, EXPERTISE_LEVELS } from '@/constants/activities';
 import { getActivityById, type ActivityDoc } from '@/lib/activities';
+import { getJoinedCount } from '@/lib/activityParticipants';
 import { useAuth } from '@/contexts/AuthContext';
 import { createJoinRequest } from '@/lib/notifications';
 import { getUserProfile } from '@/lib/userProfile';
@@ -85,22 +87,18 @@ export default function ActivityDetailScreen() {
   
   const [activity, setActivity] = useState<ActivityDoc | null>(null);
   const [creatorDisplayName, setCreatorDisplayName] = useState<string | null>(null);
+  const [joinedCount, setJoinedCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
 
-  useEffect(() => {
-    if (activityId) {
-      loadActivity();
-    }
-  }, [activityId]);
-
-  const loadActivity = async () => {
+  const loadActivity = useCallback(async () => {
     try {
       setLoading(true);
       const found = await getActivityById(activityId);
       if (found) {
         setActivity(found);
-        // If creatorName looks like email, fetch profile name instead (don't show email)
+        const count = await getJoinedCount(activityId);
+        setJoinedCount(count);
         if (found.creatorName?.includes('@')) {
           const profile = await getUserProfile(found.creatorUid);
           setCreatorDisplayName(profile?.name || 'User');
@@ -115,7 +113,17 @@ export default function ActivityDetailScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activityId]);
+
+  useEffect(() => {
+    if (activityId) loadActivity();
+  }, [activityId, loadActivity]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (activityId) loadActivity();
+    }, [activityId, loadActivity])
+  );
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -135,12 +143,19 @@ export default function ActivityDetailScreen() {
     });
   };
 
+  const requiredMembers = activity?.requiredMembers ?? 1;
+  const isFull = joinedCount >= requiredMembers;
+
   const handleJoin = async () => {
     if (!user || !activity) return;
-    
-    // Don't allow joining own activity
+
     if (user.uid === activity.creatorUid) {
       showToast.error('Cannot join', 'You cannot join your own activity');
+      return;
+    }
+
+    if (isFull) {
+      showToast.error('Full', 'This activity has reached maximum participants');
       return;
     }
 
@@ -288,27 +303,21 @@ export default function ActivityDetailScreen() {
             </View>
           </View>
 
-          {/* Players info - use doc values or fallback to config */}
-          {(() => {
-            const maxP = activity.maxPlayers ?? getActivityConfig(activity.activity)?.maxPlayers;
-            const minP = activity.minPlayersPerTeam ?? getActivityConfig(activity.activity)?.minPlayersPerTeam;
-            if (!maxP && !minP) return null;
-            return (
-              <View style={styles.detailRow}>
-                <MaterialCommunityIcons
-                  name="account-group"
-                  size={20}
-                  color="#00ADB5"
-                />
-                <View style={styles.detailContent}>
-                  <ThemedText style={styles.detailLabel}>Players</ThemedText>
-                  <ThemedText style={styles.detailValue}>
-                    {maxP ? `Max ${maxP} players` : minP ? `Min ${minP} per team` : ""}
-                  </ThemedText>
-                </View>
-              </View>
-            );
-          })()}
+          {/* Required members / joined count */}
+          <View style={styles.detailRow}>
+            <MaterialCommunityIcons
+              name="account-group"
+              size={20}
+              color="#00ADB5"
+            />
+            <View style={styles.detailContent}>
+              <ThemedText style={styles.detailLabel}>Members</ThemedText>
+              <ThemedText style={styles.detailValue}>
+                {joinedCount} of {requiredMembers} joined
+                {isFull ? " (Full)" : ""}
+              </ThemedText>
+            </View>
+          </View>
 
           {/* Creator */}
           <View style={styles.detailRow}>
@@ -335,8 +344,8 @@ export default function ActivityDetailScreen() {
         ) : null}
       </ScrollView>
 
-      {/* Join Button - Only show if user is not the creator */}
-      {!isCreator && user && (
+      {/* Join Button - Only show if user is not the creator and activity not full */}
+      {!isCreator && user && !isFull && (
         <View style={[styles.joinButtonContainer, { paddingBottom: Math.max(insets.bottom + 16, 20), borderTopColor: colors.border }]}>
           <TouchableOpacity
             style={[styles.joinButton, { backgroundColor: colors.tint }, joining && styles.joinButtonDisabled]}

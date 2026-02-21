@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper: user must be authenticated
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Helper: user owns the document
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Users: any auth user can read (for nearby players, chat), only owner can write
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
+    }
+
+    // Activities: anyone can read (for explore), only creator can create
+    match /activities/{activityId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && resource.data.creatorUid == request.auth.uid;
+    }
+
+    // Activity participants: authenticated users can add/read
+    match /activityParticipants/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Notifications: recipient can read, sender can create
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && resource.data.recipientUid == request.auth.uid;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.recipientUid == request.auth.uid;
+      allow delete: if isSignedIn();
+    }
+
+    // Scheduled activities: user can read/write their own
+    match /scheduledActivities/{docId} {
+      allow read, update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Conversations: auth users can read (getDoc on new convo has no resource), participants can write
+    match /conversations/{conversationId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && 
+        (request.resource.data.userId1 == request.auth.uid || request.resource.data.userId2 == request.auth.uid);
+      allow update: if isSignedIn() && 
+        (resource.data.userId1 == request.auth.uid || resource.data.userId2 == request.auth.uid);
+    }
+
+    // Messages: sender and receiver can read; sender can create
+    match /messages/{messageId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if false;
+    }
+
+    // Reports: authenticated users can create
+    match /reports/{reportId} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if false;
+    }
+  }
+}

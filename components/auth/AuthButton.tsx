@@ -13,6 +13,7 @@ type AuthButtonProps = {
   title: string;
   onPress: () => void;
   loading?: boolean;
+  loadingTitle?: string;
   variant?: 'primary' | 'secondary' | 'outline' | 'google';
   disabled?: boolean;
   style?: ViewStyle;
@@ -22,11 +23,13 @@ export function AuthButton({
   title,
   onPress,
   loading = false,
+  loadingTitle,
   variant = 'primary',
   disabled = false,
   style,
 }: AuthButtonProps) {
   const isDisabled = disabled || loading;
+  const displayText = loading && loadingTitle ? loadingTitle : title;
 
   return (
     <TouchableOpacity
@@ -40,16 +43,29 @@ export function AuthButton({
       disabled={isDisabled}
       activeOpacity={0.8}>
       {loading ? (
-        <ActivityIndicator
-          color={
-            variant === 'google'
-              ? '#333'
-              : variant === 'outline' || variant === 'secondary'
-                ? '#00ADB5'
-                : '#fff'
-          }
-          size="small"
-        />
+        <>
+          <ActivityIndicator
+            color={
+              variant === 'google'
+                ? '#333'
+                : variant === 'outline' || variant === 'secondary'
+                  ? '#00ADB5'
+                  : '#fff'
+            }
+            size="small"
+          />
+          <Text
+            style={[
+              styles.text,
+              variant === 'google'
+                ? styles.textGoogle
+                : variant === 'outline' || variant === 'secondary'
+                  ? styles.textSecondary
+                  : styles.textPrimary,
+            ]}>
+            {displayText}
+          </Text>
+        </>
       ) : (
         <>
           {variant === 'google' && (

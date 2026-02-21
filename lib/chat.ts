@@ -117,7 +117,7 @@ export async function sendMessage(
 
     // Send push notification to receiver (non-blocking)
     import('./chatPushNotifications').then(({ sendChatPushNotification }) => {
-      sendChatPushNotification(receiverUid, senderName, messageText.trim()).catch(() => {});
+      sendChatPushNotification(receiverUid, senderName, text.trim()).catch(() => {});
     });
 
     return messageRef.id;

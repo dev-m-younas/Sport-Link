@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -158,6 +159,7 @@ export default function ChatDetailScreen() {
       );
 
       setMessageText('');
+      Keyboard.dismiss();
     } catch (error: any) {
       console.error('Error sending message:', error);
       showToast.error('Error', 'Failed to send message');
@@ -210,9 +212,11 @@ export default function ChatDetailScreen() {
       {/* Messages */}
       <KeyboardAvoidingView
         style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}>
         <ScrollView
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           ref={scrollViewRef}
           style={styles.messagesContainer}
           contentContainerStyle={styles.messagesContent}
@@ -249,7 +253,11 @@ export default function ChatDetailScreen() {
         <View
           style={[
             styles.inputContainer,
-            { paddingBottom: Math.max(insets.bottom + 8, 16), borderTopColor: colors.border },
+            {
+              paddingBottom: Math.max(insets.bottom + 8, 16),
+              borderTopColor: colors.border,
+              backgroundColor: colors.background,
+            },
           ]}>
           <TextInput
             style={[styles.input, { backgroundColor: colors.input }]}
@@ -342,6 +350,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   messagesContent: {
+    flexGrow: 1,
     padding: 20,
     paddingBottom: 20,
   },

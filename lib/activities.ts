@@ -60,6 +60,8 @@ export interface ActivityCreateInput {
   maxPlayers?: number;
   /** For team: min per team (e.g. 5) */
   minPlayersPerTeam?: number;
+  /** Kitne members required hain (creator ke ilawa) - e.g. Cricket: 4, Padel: 1 */
+  requiredMembers?: number;
 }
 
 export interface ActivityDoc {
@@ -82,6 +84,7 @@ export interface ActivityDoc {
   activityType?: string;
   maxPlayers?: number;
   minPlayersPerTeam?: number;
+  requiredMembers?: number;
 }
 
 export async function saveActivity(
@@ -116,6 +119,7 @@ export async function saveActivity(
     if (input.activityType) activityData.activityType = input.activityType;
     if (input.maxPlayers != null) activityData.maxPlayers = input.maxPlayers;
     if (input.minPlayersPerTeam != null) activityData.minPlayersPerTeam = input.minPlayersPerTeam;
+    activityData.requiredMembers = input.requiredMembers ?? 1;
 
     // Only include videoUri if it has a value (Firebase doesn't accept undefined)
     if (
@@ -233,6 +237,7 @@ export async function getActivitiesWithinRadius(
         activityType: d.activityType ?? undefined,
         maxPlayers: d.maxPlayers ?? undefined,
         minPlayersPerTeam: d.minPlayersPerTeam ?? undefined,
+        requiredMembers: d.requiredMembers ?? undefined,
       });
     }
   });
@@ -273,6 +278,7 @@ export async function getUserActivities(
         activityType: d.activityType ?? undefined,
         maxPlayers: d.maxPlayers ?? undefined,
         minPlayersPerTeam: d.minPlayersPerTeam ?? undefined,
+        requiredMembers: d.requiredMembers ?? undefined,
       });
     });
     list.sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1));
@@ -317,6 +323,7 @@ export async function getActivityById(
       activityType: d.activityType ?? undefined,
       maxPlayers: d.maxPlayers ?? undefined,
       minPlayersPerTeam: d.minPlayersPerTeam ?? undefined,
+      requiredMembers: d.requiredMembers ?? undefined,
     };
   } catch (error) {
     console.error("Error fetching activity by ID:", error);

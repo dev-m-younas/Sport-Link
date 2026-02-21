@@ -149,41 +149,57 @@ export async function getUserNotifications(
 
 /**
  * Accept a join request
+ * Adds participant; when required members join, creates scheduled activities for ALL
  */
 export async function acceptJoinRequest(
   notificationId: string,
   recipientUser?: { uid: string; name: string; profileImage?: string }
 ): Promise<void> {
   try {
-    // Get notification details
     const notificationRef = doc(db, NOTIFICATIONS_COLLECTION, notificationId);
     const notificationSnap = await getDoc(notificationRef);
-    
+
     if (!notificationSnap.exists()) {
       throw new Error('Notification not found');
     }
 
     const notificationData = notificationSnap.data();
 
-    // Update notification status
     await updateDoc(notificationRef, {
       status: 'accepted' as NotificationStatus,
       updatedAt: serverTimestamp(),
     });
 
-    // Create scheduled activities for both users
-    if (recipientUser) {
-      const { createScheduledActivityForBothUsers } = await import('./scheduledActivities');
-      
-      await createScheduledActivityForBothUsers({
-        activityId: notificationData.activityId,
-        userId1: notificationData.recipientUid, // Activity creator
-        userId2: notificationData.senderUid, // User who joined
-        user1Name: recipientUser.name,
-        user2Name: notificationData.senderName,
-        user1ProfileImage: recipientUser.profileImage,
-        user2ProfileImage: notificationData.senderProfileImage,
-      });
+    if (!recipientUser) return;
+
+    const { addParticipant, getActivityParticipants } = await import('./activityParticipants');
+    const { createScheduledActivityForAllParticipants } = await import('./scheduledActivities');
+    const { getActivityById } = await import('./activities');
+
+    await addParticipant(
+      notificationData.activityId,
+      notificationData.senderUid,
+      notificationData.senderName,
+      notificationData.senderProfileImage,
+    );
+
+    const participants = await getActivityParticipants(notificationData.activityId);
+    const activity = await getActivityById(notificationData.activityId);
+    const requiredMembers = activity?.requiredMembers ?? 1;
+    const isFull = participants.length >= requiredMembers;
+
+    if (isFull) {
+      await createScheduledActivityForAllParticipants(
+        notificationData.activityId,
+        notificationData.recipientUid,
+        recipientUser.name,
+        recipientUser.profileImage,
+        participants.map((p) => ({
+          userId: p.userId,
+          userName: p.userName,
+          userProfileImage: p.userProfileImage,
+        })),
+      );
     }
   } catch (error) {
     console.error('Error accepting join request:', error);

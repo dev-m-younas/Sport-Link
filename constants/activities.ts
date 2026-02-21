@@ -45,6 +45,20 @@ export function getActivityConfig(activityId: string): ActivityConfig | undefine
 }
 
 /**
+ * Get the range of required members user can select (kitne members chahiye)
+ * - team: 2-11 (e.g. Cricket 4, Football 5)
+ * - limited: 1-4 (e.g. Padel 1-3, Tennis 2-4)
+ * - open: 1-10
+ */
+export function getRequiredMembersRange(activityId: string): { min: number; max: number } {
+  const cfg = getActivityConfig(activityId);
+  if (!cfg) return { min: 1, max: 10 };
+  if (cfg.type === "team") return { min: 2, max: 11 };
+  if (cfg.type === "limited") return { min: 1, max: (cfg.maxPlayers ?? 4) - 1 }; // exclude creator
+  return { min: 1, max: 10 }; // open
+}
+
+/**
  * Expertise levels - same as onboarding (Beginner, Intermediate, Pro)
  */
 export const EXPERTISE_LEVELS = [

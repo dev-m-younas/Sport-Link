@@ -9,12 +9,38 @@
       ]
     },
     {
+      "collectionGroup": "messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "conversationId", "order": "ASCENDING"},
+        {"fieldPath": "senderUid", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "conversationId", "order": "ASCENDING"},
+        {"fieldPath": "receiverUid", "order": "ASCENDING"},
+        {"fieldPath": "createdAt", "order": "ASCENDING"}
+      ]
+    },
+    {
       "collectionGroup": "scheduledActivities",
       "queryScope": "COLLECTION",
       "fields": [
         {"fieldPath": "userId", "order": "ASCENDING"},
         {"fieldPath": "activityDate", "order": "ASCENDING"},
         {"fieldPath": "activityTime", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "activityParticipants",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "activityId", "order": "ASCENDING"},
+        {"fieldPath": "status", "order": "ASCENDING"}
       ]
     }
   ],
